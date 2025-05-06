@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load i18n course_tags %}
+
+{% block title %}{% trans "Course" %}: {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5" data-aos="fade-up">
+    <h1 class="mb-4">{{ course.title }}</h1>
+    {% include 'partials/messages.html' %}
+
+    <div class="card mb-4" data-aos="fade-up">
+        <div class="card-body">
+            <h5 class="card-title">{% trans "Course Details" %}</h5>
+            <p class="card-text">{{ course.description|safe }}</p>
+            {% if user.is_teacher and course.teacher == user %}
+                <a href="{% url 'courses:course_edit' pk=course.pk %}" class="btn btn-primary" data-aos="fade-right">{% trans "Edit Course" %}</a>
+                <a href="{% url 'courses:manage_lessons' course.id %}" class="btn btn-outline-primary" data-aos="fade-right">{% trans "Manage Lessons" %}</a>
+            {% elif user.is_student %}
+                {% if is_enrolled %}
+                    <a href="{% url 'courses:unenroll_course' course.id %}" class="btn btn-outline-danger" data-aos="fade-right">{% trans "Unenroll" %}</a>
+                {% else %}
+                    <a href="{% url 'courses:enroll_course' course.id %}" class="btn btn-primary" data-aos="fade-right">{% trans "Enroll" %}</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <h2 class="mb-4">{% trans "Lessons" %}</h2>
+    {% if lessons %}
+        <div class="row">
+            {% for lesson in lessons %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100" data-aos="fade-up">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ lesson.title }}</h5>
+                            <p class="card-text">{{ lesson.description|truncatewords:20 }}</p>
+                            <a href="{% url 'courses:lesson_detail' lesson.id %}" class="btn btn-primary" data-aos="fade-right">{% trans "View Lesson" %}</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info" data-aos="fade-up">
+            {% trans "No lessons available for this course." %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

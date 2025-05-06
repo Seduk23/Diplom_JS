@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Admin Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5" data-aos="fade-up">
+    <h1>{% trans "Admin Dashboard" %}</h1>
+    <h3>{% trans "Students" %}</h3>
+    <ul class="list-group mb-4">
+        {% for student in students %}
+            <li class="list-group-item" data-aos="fade-right">{{ student.username }}</li>
+        {% empty %}
+            <li class="list-group-item">{% trans "No students registered." %}</li>
+        {% endfor %}
+    </ul>
+    <h3>{% trans "Teachers" %}</h3>
+    <ul class="list-group mb-4">
+        {% for teacher in teachers %}
+            <li class="list-group-item" data-aos="fade-right">{{ teacher.username }}</li>
+        {% empty %}
+            <li class="list-group-item">{% trans "No teachers registered." %}</li>
+        {% endfor %}
+    </ul>
+    <h3>{% trans "Courses" %}</h3>
+    <ul class="list-group">
+        {% for course in courses %}
+            <li class="list-group-item" data-aos="fade-right">{{ course.title }}</li>
+        {% empty %}
+            <li class="list-group-item">{% trans "No courses available." %}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

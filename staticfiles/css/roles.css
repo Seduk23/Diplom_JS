@@ -1,0 +1,69 @@
+/* static/css/roles.css */
+
+:root {
+    --teacher-color: #6f42c1;
+    --admin-color: #dc3545;
+    --student-color: #20c997;
+    --transition-speed: 0.2s;
+}
+
+/* Стили для бейджей ролей */
+.badge-role {
+    font-size: 0.75rem;
+    vertical-align: middle;
+    padding: 0.35em 0.65em;
+    font-weight: 600;
+    border-radius: 0.25rem;
+}
+
+.badge-teacher {
+    background-color: var(--teacher-color);
+    color: white;
+}
+
+.badge-admin {
+    background-color: var(--admin-color);
+    color: white;
+}
+
+.badge-student {
+    background-color: var(--student-color);
+    color: white;
+}
+
+/* Анимации навигации */
+.nav-link {
+    transition: all var(--transition-speed) ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-link:hover {
+    transform: translateX(3px);
+    opacity: 0.9;
+}
+
+.nav-link i {
+    transition: transform var(--transition-speed) ease;
+}
+
+.nav-link:hover i {
+    transform: scale(1.1);
+}
+
+/* Адаптация навигации для мобильных */
+@media (max-width: 768px) {
+    .navbar-nav {
+        padding-top: 10px;
+    }
+    
+    .nav-item {
+        margin-bottom: 8px;
+    }
+    
+    .badge-role {
+        font-size: 0.65rem;
+        padding: 0.25em 0.5em;
+    }
+}

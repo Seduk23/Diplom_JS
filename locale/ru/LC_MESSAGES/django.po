@@ -1,0 +1,106 @@
+# Russian translations for Django project
+msgid ""
+msgstr ""
+"Project-Id-Version: django\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-03 12:00+0000\n"
+"PO-Revision-Date: 2025-05-03 12:00+0000\n"
+"Last-Translator: Your Name <your.email@example.com>\n"
+"Language-Team: Russian <ru@li.org>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "JS Learning Platform"
+msgstr "Платформа обучения JS"
+
+msgid "JS Learning"
+msgstr "Обучение JS"
+
+msgid "Toggle navigation"
+msgstr "Переключить навигацию"
+
+msgid "My Courses"
+msgstr "Мои курсы"
+
+msgid "Create Course"
+msgstr "Создать курс"
+
+msgid "Student Test Results"
+msgstr "Результаты тестов студентов"
+
+msgid "View Course"
+msgstr "Просмотреть курс"
+
+msgid "Manage Lessons"
+msgstr "Управление уроками"
+
+msgid "Unenroll"
+msgstr "Отписаться"
+
+msgid "Student"
+msgstr "Студент"
+
+msgid "Teacher"
+msgstr "Преподаватель"
+
+msgid "Admin"
+msgstr "Администратор"
+
+msgid "Logout"
+msgstr "Выйти"
+
+msgid "Login"
+msgstr "Войти"
+
+msgid "Sign Up as Student"
+msgstr "Зарегистрироваться как студент"
+
+msgid "Sign Up as Teacher"
+msgstr "Зарегистрироваться как преподаватель"
+
+msgid "Create Test"
+msgstr "Создать тест"
+
+msgid "No test results yet."
+msgstr "Результатов тестов пока нет."
+
+msgid "You have not created any courses."
+msgstr "Вы не создали ни одного курса."
+
+msgid "Create a course"
+msgstr "Создать курс"
+
+msgid "You are not enrolled in any courses."
+msgstr "Вы не записаны ни на один курс."
+
+msgid "Browse courses"
+msgstr "Просмотреть курсы"
+
+msgid "Course"
+msgstr "Курс"
+
+msgid "Course Details"
+msgstr "Детали курса"
+
+msgid "Edit Course"
+msgstr "Редактировать курс"
+
+msgid "Enroll"
+msgstr "Записаться"
+
+msgid "Lessons"
+msgstr "Уроки"
+
+msgid "View Lesson"
+msgstr "Просмотреть урок"
+
+msgid "No lessons available for this course."
+msgstr "Для этого курса нет доступных уроков."
+
+msgid "Teacher Dashboard"
+msgstr "Личный кабинет преподавателя"
+
+msgid "Back to Lessons"
+msgstr "Вернуться к урокам"

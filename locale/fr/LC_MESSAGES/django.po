@@ -1,0 +1,98 @@
+# French translations for Diplom_JS
+msgid ""
+msgstr ""
+"Project-Id-Version: Diplom_JS\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-05 12:00+0000\n"
+"PO-Revision-Date: 2025-05-05 12:00+0000\n"
+"Last-Translator: Your Name <your.email@example.com>\n"
+"Language-Team: French <fr@translators.com>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "My Courses"
+msgstr "Mes Cours"
+
+msgid "Create Course"
+msgstr "Créer un Cours"
+
+msgid "Manage Lessons"
+msgstr "Gérer les Leçons"
+
+msgid "View Course"
+msgstr "Voir le Cours"
+
+msgid "Teacher Dashboard"
+msgstr "Tableau de Bord du Professeur"
+
+msgid "Student Test Results"
+msgstr "Résultats des Tests des Étudiants"
+
+msgid "Student"
+msgstr "Étudiant"
+
+msgid "Lesson"
+msgstr "Leçon"
+
+msgid "Score"
+msgstr "Score"
+
+msgid "Attempts"
+msgstr "Tentatives"
+
+msgid "No test results yet."
+msgstr "Aucun résultat de test pour le moment."
+
+msgid "You have not created any courses."
+msgstr "Vous n'avez créé aucun cours."
+
+msgid "Create a course"
+msgstr "Créer un cours"
+
+msgid "Progress"
+msgstr "Progrès"
+
+msgid "lessons"
+msgstr "leçons"
+
+msgid "Manage Lessons for"
+msgstr "Gérer les Leçons pour"
+
+msgid "Create Lesson"
+msgstr "Créer une Leçon"
+
+msgid "Edit Lesson"
+msgstr "Modifier la Leçon"
+
+msgid "Create Test"
+msgstr "Créer un Test"
+
+msgid "Edit Test"
+msgstr "Modifier le Test"
+
+msgid "Test already created"
+msgstr "Test déjà créé"
+
+msgid "No lessons created yet."
+msgstr "Aucune leçon créée pour le moment."
+
+msgid "Logout"
+msgstr "Déconnexion"
+
+msgid "Login"
+msgstr "Connexion"
+
+msgid "Sign Up as Student"
+msgstr "S'inscrire en tant qu'Étudiant"
+
+msgid "Sign Up as Teacher"
+msgstr "S'inscrire en tant que Professeur"
+
+msgid "Toggle navigation"
+msgstr "Basculer la navigation"
+
+msgid "JS Learning"
+msgstr "Apprentissage JS"

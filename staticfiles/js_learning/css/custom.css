@@ -1,0 +1,81 @@
+/* Карусель урока */
+.carousel {
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-item .card {
+    border: none;
+    background: #f8f9fa;
+    padding: 20px;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.carousel-item .card-body {
+    text-align: center;
+}
+
+.carousel-item h5 {
+    font-size: 1.5rem;
+    color: #343a40;
+    margin-bottom: 15px;
+}
+
+.carousel-item p {
+    font-size: 1.1rem;
+    color: #6c757d;
+}
+
+/* Видео */
+.embed-responsive {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Форма теста */
+.carousel-item form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.carousel-item form .form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.carousel-item form button {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.1rem;
+}
+
+/* Кнопки навигации карусели */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 10%;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-size: 50%;
+}
+
+/* Кнопки навигации по урокам */
+.btn-outline-secondary {
+    padding: 10px 20px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}

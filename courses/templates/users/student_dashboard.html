@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load i18n course_tags %}
+
+{% block title %}{% trans "Student Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5" data-aos="fade-up">
+    <h1 class="mb-4">{% trans "My Courses" %}</h1>
+
+    {% if enrollments %}
+        <div class="row">
+            {% for enrollment in enrollments %}
+                {% with buttons=None|add_button:enrollment.course.id|add_button:'courses:course_detail,primary,View Course'|add_button:'courses:unenroll_course,outline-danger,Unenroll' %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        {% include 'partials/course_card.html' with course=enrollment.course progress=progress.enrollment.course.id test_results=test_results.enrollment.course.id buttons=buttons %}
+                    </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info" data-aos="fade-up">
+            {% trans "You are not enrolled in any courses." %}
+            <a href="{% url 'courses:home' %}" class="alert-link">{% trans "Browse courses" %}</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

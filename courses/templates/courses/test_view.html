@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Take Test" %} - {{ test.title }}{% endblock %}
+
+{% block content %}
+<div class="container test-container mt-5" data-aos="fade-up">
+    <form method="post" action="{% url 'courses:take_test' lesson.id %}">
+        {% csrf_token %}
+        <div class="test-header mb-4" data-aos="fade-down">
+            <h1>{{ test.title }}</h1>
+            {% if test.description %}
+                <p class="lead">{{ test.description }}</p>
+            {% endif %}
+            <div class="test-info">
+                <span class="badge bg-info">
+                    <i class="bi bi-question-circle"></i> {% trans "Questions" %}: {{ test.questions.count }}
+                </span>
+                <span class="badge bg-warning text-dark">
+                    <i class="bi bi-check-circle"></i> {% trans "Passing Score" %}: {{ test.passing_score }}%
+                </span>
+            </div>
+        </div>
+        
+        {% for question in test.questions.all %}
+        <div class="question-card card mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|mul:100 }}">
+            <div class="card-body">
+                <h3 class="question-title">
+                    <span class="question-number">{{ forloop.counter }}.</span>
+                    {{ question.text }}
+                </h3>
+                
+                {% if question.question_type == 'text' %}
+                <div class="form-group">
+                    <textarea class="form-control" name="question_{{ question.id }}" rows="3" required></textarea>
+                </div>
+                {% else %}
+                <ul class="answers-list list-group">
+                    {% for answer in question.answers.all %}
+                    <li class="list-group-item">
+                        <div class="form-check">
+                            {% if question.question_type == 'single' %}
+                            <input class="form-check-input" type="radio" 
+                                   name="question_{{ question.id }}" 
+                                   value="{{ answer.id }}" 
+                                   id="answer_{{ answer.id }}" required>
+                            {% else %}
+                            <input class="form-check-input" type="checkbox" 
+                                   name="question_{{ question.id }}" 
+                                   value="{{ answer.id }}"
+                                   id="answer_{{ answer.id }}">
+                            {% endif %}
+                            <label class="form-check-label" for="answer_{{ answer.id }}">
+                                {{ answer.text }}
+                            </label>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="test-actions" data-aos="fade-up">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-send"></i> {% trans "Submit Answers" %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

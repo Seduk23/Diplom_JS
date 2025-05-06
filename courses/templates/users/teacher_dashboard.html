@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load i18n course_tags %}
+
+{% block title %}{% trans "Teacher Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5" data-aos="fade-up">
+    <h1 class="mb-4">{% trans "My Courses" %}</h1>
+    {% include 'partials/messages.html' %}
+
+    {% if courses %}
+        <div class="row">
+            {% for course in courses %}
+                {% with buttons=None|add_button:course.id|add_button:'courses:course_detail,primary,View Course'|add_button:'courses:manage_lessons,outline-primary,Manage Lessons'|add_button:'courses:delete_course,danger,Delete' %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        {% include 'partials/course_card.html' with course=course buttons=buttons %}
+                    </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+
+        <h2 class="mt-5 mb-4">{% trans "Student Test Results" %}</h2>
+        {% for course in courses %}
+            <div class="card mb-4" data-aos="fade-up">
+                <div class="card-body">
+                    <h5 class="card-title">{{ course.title }}</h5>
+                    {% if test_results|get_item:course.id %}
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Student" %}</th>
+                                    <th>{% trans "Lesson" %}</th>
+                                    <th>{% trans "Score" %}</th>
+                                    <th>{% trans "Attempts" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in test_results|get_item:course.id %}
+                                    <tr>
+                                        <td>{{ result.student__username }}</td>
+                                        <td>{{ result.lesson__title }}</td>
+                                        <td>{{ result.score }}%</td>
+                                        <td>{{ result.attempts }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-muted">{% trans "No test results yet." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" data-aos="fade-up">
+            {% trans "You have not created any courses." %}
+            <a href="{% url 'courses:course_create' %}" class="alert-link">{% trans "Create a course" %}</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

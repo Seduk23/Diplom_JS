@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Teacher Signup" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5" data-aos="fade-up">
+    <h1>{% trans "Teacher Signup" %}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">{% trans "Sign Up" %}</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Log In" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5" data-aos="fade-up">
+    {% include 'partials/messages.html' %}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>{% trans "Log In" %}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary">{% trans "Log In" %}</button>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    {% trans "Don't have an account?" %}
+                    <a href="{% url 'courses:student_signup' %}">{% trans "Sign up as Student" %}</a> |
+                    <a href="{% url 'courses:teacher_signup' %}">{% trans "Sign up as Teacher" %}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

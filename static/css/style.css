@@ -1,0 +1,76 @@
+/* Общие стили */
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Навигация */
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: #fff;
+}
+
+/* Футер */
+footer {
+    background-color: #343a40;
+    color: #fff;
+    padding: 1rem 0;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Карусель */
+.carousel-control-prev,
+.carousel-control-next {
+    z-index: 1;
+    width: 5%;
+    opacity: 0.7;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    opacity: 1;
+}
+
+.carousel-inner {
+    z-index: 0;
+}
+
+/* Форма теста */
+.test-form {
+    position: relative;
+    z-index: 2;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    pointer-events: auto;
+}
+
+.test-form input,
+.test-form button[type="submit"] {
+    z-index: 2;
+    position: relative;
+    pointer-events: auto;
+}
+
+.test-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.test-form input[type="radio"],
+.test-form input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+/* Карточка в карусели */
+.carousel-item .card {
+    margin: 0 15%;
+    max-width: 70%;
+}
+
+/* Контейнер */
+.container {
+    padding-bottom: 2rem;
+}

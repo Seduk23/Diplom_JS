@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Lesson" %} {{ lesson.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5" data-aos="fade-up">
+    <h1 class="mb-4">{{ lesson.title }}</h1>
+    {% include 'partials/messages.html' %}
+
+    <!-- Карусель для перелистывания контента -->
+    <div id="lessonCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <!-- Слайд 1: Описание -->
+            <div class="carousel-item active">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{% trans "Description" %}</h5>
+                        <p class="card-text">{{ lesson.description|safe }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Слайд 2: Видео -->
+            {% if lesson.video_url %}
+            <div class="carousel-item">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{% trans "Video" %}</h5>
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe class="embed-responsive-item" src="{{ lesson.video_url }}" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Слайд 3: Тест (для студентов) -->
+            {% if user.is_student and has_test %}
+            <div class="carousel-item">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ tests.0.title }}</h5>
+                        <p class="card-text">{{ tests.0.description|safe }}</p>
+                        {% if lesson.testresult_set.first %}
+                        <p class="card-text">
+                            {% trans "Your last score" %}: {{ lesson.testresult_set.first.score }}%
+                            (<a href="{% url 'courses:test_results' lesson_id=lesson.id %}">{% trans "View all results" %}</a>)
+                        </p>
+                        {% endif %}
+                        <!-- Форма теста -->
+                        {% if form %}
+                        <form method="post" class="mt-3 test-form" id="testForm">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <button type="submit" class="btn btn-primary" id="submitTest">{% trans "Submit Test" %}</button>
+                        </form>
+                        {% elif has_questions %}
+                        <p class="text-danger">{% trans "You have exceeded the maximum number of attempts for this test." %}</p>
+                        {% else %}
+                        <p class="text-warning">{% trans "This test has no questions yet. Please contact your teacher." %}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Кнопки навигации -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#lessonCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">{% trans "Previous" %}</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#lessonCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">{% trans "Next" %}</span>
+        </button>
+    </div>
+
+    <!-- Навигация по урокам -->
+    <div class="d-flex justify-content-between mt-4">
+        {% if prev_lesson %}
+        <a href="{% url 'courses:lesson_detail' prev_lesson.id %}" class="btn btn-outline-secondary" data-aos="fade-right">
+            {% trans "Previous Lesson" %}
+        </a>
+        {% endif %}
+        {% if next_lesson and can_access_next_lesson %}
+        <a href="{% url 'courses:lesson_detail' next_lesson.id %}" class="btn btn-outline-secondary" data-aos="fade-left">
+            {% trans "Next Lesson" %}
+        </a>
+        {% elif next_lesson and user.is_student and has_test and not can_access_next_lesson %}
+        <p class="text-warning">{% trans "Please pass the test to unlock the next lesson." %}</p>
+        {% endif %}
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const testForm = document.getElementById('testForm');
+        if (testForm) {
+            testForm.addEventListener('submit', function(e) {
+                console.log('Form submitted');
+            });
+        }
+
+        const submitButton = document.getElementById('submitTest');
+        if (submitButton) {
+            submitButton.addEventListener('click', function(e) {
+                console.log('Submit button clicked');
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

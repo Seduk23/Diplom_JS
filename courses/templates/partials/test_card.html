@@ -1,0 +1,19 @@
+{% load i18n %}
+<div class="card mb-4" data-aos="fade-up">
+    <div class="card-body">
+        <h5 class="card-title">{% trans "Test" %}: {{ test.title }}</h5>
+        <p class="card-text">{{ test.description|safe }}</p>
+        <p class="card-text">{% trans "Passing Score" %}: {{ test.passing_score }}%</p>
+        {% if result %}
+            <p class="card-text">{% trans "Your Score" %}: {{ result.score }}% ({% trans "Attempts" %}: {{ result.attempts }})</p>
+            {% if result.score >= test.passing_score %}
+                <p class="text-success">{% trans "Passed" %}</p>
+            {% else %}
+                <p class="text-danger">{% trans "Not Passed" %}</p>
+            {% endif %}
+        {% endif %}
+        <a href="{% url 'courses:take_test' lesson.id %}" class="btn btn-primary" data-aos="fade-right">
+            {% trans "Take Test" %}
+        </a>
+    </div>
+</div>

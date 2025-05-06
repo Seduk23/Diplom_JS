@@ -1,0 +1,48 @@
+.lesson-content {
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+.lesson-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.lesson-meta .badge {
+    font-size: 0.9rem;
+    padding: 0.35rem 0.65rem;
+}
+
+.lesson-text table {
+    width: 100%;
+    margin: 1rem 0;
+    border-collapse: collapse;
+}
+
+.lesson-text table, 
+.lesson-text th, 
+.lesson-text td {
+    border: 1px solid #dee2e6;
+}
+
+.lesson-text th, 
+.lesson-text td {
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.lesson-text pre {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.lesson-text code {
+    background: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.9em;
+}

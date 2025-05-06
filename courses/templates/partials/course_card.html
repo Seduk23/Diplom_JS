@@ -1,0 +1,51 @@
+{% load i18n %}
+<div class="card h-100" data-aos="fade-up">
+    <div class="card-body">
+        <h5 class="card-title">{{ course.title }}</h5>
+        <p class="card-text">{{ course.description|truncatewords:30 }}</p>
+        {% if progress %}
+            <p class="card-text">
+                {% trans "Progress" %}: {{ progress.percent }}% 
+                ({{ progress.completed }} / {{ progress.total }} {% trans "lessons" %})
+            </p>
+        {% endif %}
+        {% if buttons %}
+            <div class="d-flex gap-2 mt-3">
+                {% for button in buttons %}
+                    {% if button.style == 'danger' %}
+                        <button type="button" class="btn btn-{{ button.style }}" data-bs-toggle="modal" data-bs-target="#deleteCourseModal{{ course.id }}" data-aos="fade-right">
+                            {% trans button.label %}
+                        </button>
+                    {% else %}
+                        <a href="{{ button.url }}" class="btn btn-{{ button.style }}" data-aos="fade-right">
+                            {% trans button.label %}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal for Delete Confirmation -->
+<div class="modal fade" id="deleteCourseModal{{ course.id }}" tabindex="-1" aria-labelledby="deleteCourseModalLabel{{ course.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteCourseModalLabel{{ course.id }}">{% trans "Confirm Deletion" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% trans "Are you sure you want to delete the course" %} "{{ course.title }}"? 
+                {% trans "This action cannot be undone." %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <form action="{% url 'courses:delete_course' course.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

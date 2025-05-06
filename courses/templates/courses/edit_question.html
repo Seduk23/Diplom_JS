@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Edit Question" %} - {{ question.text|truncatechars:30 }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5" data-aos="fade-up">
+    <h1>{% trans "Edit Question" %}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ question_form.as_p }}
+        <h3>{% trans "Answers" %}</h3>
+        {% for answer_form in answer_forms %}
+            <div class="mb-3">
+                {{ answer_form.as_p }}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
+        <a href="{% url 'courses:manage_test_questions' question.test.id %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+        <a href="{% url 'courses:add_answer' question.id %}" class="btn btn-success">{% trans "Add Answer" %}</a>
+    </form>
+</div>
+{% endblock %}
