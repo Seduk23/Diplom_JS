@@ -12,6 +12,7 @@
     <div id="lessonCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
             <!-- Слайд 1: Описание -->
+            {% if lesson.description %}
             <div class="carousel-item active">
                 <div class="card">
                     <div class="card-body">
@@ -20,8 +21,21 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
 
-            <!-- Слайд 2: Видео -->
+            <!-- Слайд 2: Контент -->
+            {% if lesson.content %}
+            <div class="carousel-item {% if not lesson.description %}active{% endif %}">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{% trans "Content" %}</h5>
+                        <div class="card-text">{{ lesson.content|linebreaks }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Слайд 3: Видео -->
             {% if lesson.video_url %}
             <div class="carousel-item">
                 <div class="card">
@@ -35,7 +49,7 @@
             </div>
             {% endif %}
 
-            <!-- Слайд 3: Тест (для студентов) -->
+            <!-- Слайд 4: Тест (для студентов) -->
             {% if user.is_student and has_test %}
             <div class="carousel-item">
                 <div class="card">
@@ -67,6 +81,7 @@
         </div>
 
         <!-- Кнопки навигации -->
+        {% if lesson.description or lesson.content or lesson.video_url or has_test %}
         <button class="carousel-control-prev" type="button" data-bs-target="#lessonCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">{% trans "Previous" %}</span>
@@ -75,21 +90,22 @@
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="visually-hidden">{% trans "Next" %}</span>
         </button>
+        {% endif %}
     </div>
 
     <!-- Навигация по урокам -->
     <div class="d-flex justify-content-between mt-4">
         {% if prev_lesson %}
-        <a href="{% url 'courses:lesson_detail' prev_lesson.id %}" class="btn btn-outline-secondary" data-aos="fade-right">
+        <a href="{% url 'courses:lesson_detail' lesson_id=prev_lesson.id %}" class="btn btn-outline-secondary" data-aos="fade-right">
             {% trans "Previous Lesson" %}
         </a>
         {% endif %}
         {% if next_lesson and can_access_next_lesson %}
-        <a href="{% url 'courses:lesson_detail' next_lesson.id %}" class="btn btn-outline-secondary" data-aos="fade-left">
+        <a href="{% url 'courses:lesson_detail' lesson_id=next_lesson.id %}" class="btn btn-outline-secondary" data-aos="fade-left">
             {% trans "Next Lesson" %}
         </a>
         {% elif next_lesson and user.is_student and has_test and not can_access_next_lesson %}
-        <p class="text-warning">{% trans "Please pass the test to unlock the next lesson." %}</p>
+        <p class="text-warning">{% trans "Please pass the test with the required score to unlock the next lesson." %}</p>
         {% endif %}
     </div>
 </div>

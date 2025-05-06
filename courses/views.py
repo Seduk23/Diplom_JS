@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse
+from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
@@ -22,13 +23,29 @@ from .decorators import teacher_required, student_required
 def check_course_access(user, course):
     """Проверяет, имеет ли пользователь доступ к курсу."""
     if not course.can_view(user):
-        raise HttpResponseForbidden(_("You do not have access to this course"))
+        raise PermissionDenied(_("You do not have access to this course"))
 
-def check_lesson_access(user, lesson):
+def check_lesson_access(request, lesson):
     """Проверяет, имеет ли пользователь доступ к уроку и его публикацию."""
+    user = request.user
     if not lesson.is_published and not (user.is_staff or user.is_admin):
-        raise HttpResponseForbidden(_("Lesson is not published"))
+        raise PermissionDenied(_("Lesson is not published"))
     check_course_access(user, lesson.course)
+    if user.is_student:
+        # Проверка порядка уроков
+        lessons = lesson.course.lessons.filter(is_published=True).order_by('id')
+        lesson_index = list(lessons).index(lesson)
+        if lesson_index > 0:
+            prev_lesson = lessons[lesson_index - 1]
+            # Проверяем, что предыдущий урок завершён
+            prev_progress = Progress.objects.filter(student=user, lesson=prev_lesson, completed=True).exists()
+            if not prev_progress:
+                test = Test.objects.filter(lesson=prev_lesson).first()
+                if test:
+                    messages.error(request, _("You must pass the test for the previous lesson to access this one."))
+                else:
+                    messages.error(request, _("You must complete the previous lesson to access this one."))
+                raise PermissionDenied(_("Previous lesson not completed."))
 
 def home(request):
     """Отображает главную страницу с активными курсами."""
@@ -415,6 +432,48 @@ def unenroll_course(request, course_id):
     messages.success(request, _(f"You have unenrolled from {course.title}"))
     return redirect('courses:student_dashboard')
 
+@method_decorator([login_required, teacher_required], name='dispatch')
+class CourseUpdateView(UpdateView):
+    model = Course
+    form_class = CourseForm
+    template_name = 'courses/course_form.html'
+    success_url = reverse_lazy('courses:teacher_dashboard')
+
+    def get_queryset(self):
+        return Course.objects.filter(creator=self.request.user)
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Course updated successfully!"))
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = _("Edit Course")
+        return context
+
+@method_decorator([login_required, teacher_required], name='dispatch')
+class LessonUpdateView(UpdateView):
+    model = Lesson
+    form_class = LessonForm
+    template_name = 'courses/lesson_form.html'
+    success_url = reverse_lazy('courses:teacher_dashboard')
+
+    def get_queryset(self):
+        return Lesson.objects.filter(course__creator=self.request.user)
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Lesson updated successfully!"))
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = _("Edit Lesson")
+        context['course'] = self.object.course
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy('courses:manage_lessons', kwargs={'course_id': self.object.course.id})
+
 @method_decorator(login_required, name='dispatch')
 class LessonDetailView(LoginRequiredMixin, DetailView):
     model = Lesson
@@ -424,7 +483,7 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
 
     def get_object(self, queryset=None):
         lesson = get_object_or_404(Lesson, id=self.kwargs['lesson_id'])
-        check_lesson_access(self.request.user, lesson)
+        check_lesson_access(self.request, lesson)
         return lesson
 
     def get_context_data(self, **kwargs):
@@ -432,6 +491,7 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
         lesson = self.object
         course = lesson.course
         lessons = course.lessons.filter(is_published=True).order_by("id")
+        context["course"] = course
         context["prev_lesson"] = lessons.filter(id__lt=lesson.id).last()
         context["next_lesson"] = lessons.filter(id__gt=lesson.id).first()
 
@@ -552,7 +612,7 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
 def test_result(request, lesson_id):
     """Отображает результаты теста для студента."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
-    check_lesson_access(request.user, lesson)
+    check_lesson_access(request, lesson)
     results = TestResult.objects.filter(student=request.user, lesson=lesson).order_by('-completed_at')
     stats = results.aggregate(
         avg_score=Avg('score'),
@@ -590,12 +650,12 @@ def process_test_answers(test, request):
 
     return score, total_points, answers
 
-def update_test_result(result, score, total_points, answers, test, lesson, request):
+def update_test_result(result, score, total_points, messages, test, lesson, request):
     """Обновляет или создаёт результат теста."""
     percentage = (score / total_points * 100) if total_points else 0
     if result:
         result.score = percentage
-        result.answers = answers
+        result.answers = messages
         result.attempts += 1
         result.save()
     else:
@@ -603,7 +663,7 @@ def update_test_result(result, score, total_points, answers, test, lesson, reque
             student=request.user,
             lesson=lesson,
             score=percentage,
-            answers=answers,
+            answers=messages,
             attempts=1
         )
     if result.score >= test.passing_score:

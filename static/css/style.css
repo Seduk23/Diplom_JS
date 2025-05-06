@@ -27,12 +27,19 @@ footer {
 .carousel-control-next {
     z-index: 1;
     width: 5%;
-    opacity: 0.7;
+    opacity: 1; /* Всегда видимые стрелки */
+    background: rgba(0, 0, 0, 0.3); /* Полупрозрачный фон */
+    transition: background 0.3s;
 }
 
 .carousel-control-prev:hover,
 .carousel-control-next:hover {
-    opacity: 1;
+    background: rgba(0, 0, 0, 0.5); /* Более тёмный фон при наведении */
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(1); /* Белые стрелки для контраста */
 }
 
 .carousel-inner {

@@ -25,24 +25,28 @@
             {% endif %}
         </div>
         <div class="mb-3">
-            <label for="{{ form.image.id_for_label }}" class="form-label">{% trans "Image" %}</label>
-            {{ form.image }}
-            {% if form.image.errors %}
-                <div class="invalid-feedback d-block">{{ form.image.errors }}</div>
+            <label for="{{ form.content.id_for_label }}" class="form-label">{% trans "Content" %}</label>
+            {{ form.content }}
+            {% if form.content.errors %}
+                <div class="invalid-feedback d-block">{{ form.content.errors }}</div>
             {% endif %}
-            {% if form.instance.image %}
-                <p>{% trans "Current image" %}: <img src="{{ form.instance.image.url }}" alt="Course Image" style="max-width: 200px;" /></p>
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.video_url.id_for_label }}" class="form-label">{% trans "Video URL" %}</label>
+            {{ form.video_url }}
+            {% if form.video_url.errors %}
+                <div class="invalid-feedback d-block">{{ form.video_url.errors }}</div>
             {% endif %}
         </div>
         <div class="mb-3 form-check">
-            {{ form.is_active }}
-            <label for="{{ form.is_active.id_for_label }}" class="form-check-label">{% trans "Is Active" %}</label>
-            {% if form.is_active.errors %}
-                <div class="invalid-feedback d-block">{{ form.is_active.errors }}</div>
+            {{ form.is_published }}
+            <label for="{{ form.is_published.id_for_label }}" class="form-check-label">{% trans "Is Published" %}</label>
+            {% if form.is_published.errors %}
+                <div class="invalid-feedback d-block">{{ form.is_published.errors }}</div>
             {% endif %}
         </div>
         <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
-        <a href="{% url 'courses:teacher_dashboard' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+        <a href="{% url 'courses:manage_lessons' course_id=course.id %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
     </form>
 </div>
 {% endblock %}

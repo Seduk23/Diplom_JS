@@ -6,23 +6,30 @@
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
     <h1>{% trans "Manage Lessons for" %} {{ course.title }}</h1>
-    
+    {% include 'partials/messages.html' %}
+
     <h3>{% trans "Add New Lesson" %}</h3>
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" class="mb-4">
         {% csrf_token %}
         {{ lesson_form.as_p }}
         <button type="submit" class="btn btn-primary">{% trans "Add Lesson" %}</button>
     </form>
-    
+
     <h3 class="mt-5">{% trans "Lessons" %}</h3>
     {% if lessons %}
     <div class="list-group" id="lesson-list">
         {% for lesson in lessons %}
         <div class="list-group-item" data-id="{{ lesson.id }}" data-aos="fade-up">
-            <h5>{{ lesson.title }}</h5>
+            <h5>{{ lesson.title }} {% if lesson.is_published %}
+                <span class="badge bg-success">{% trans "Published" %}</span>
+                {% else %}
+                <span class="badge bg-warning">{% trans "Draft" %}</span>
+                {% endif %}
+            </h5>
             <p>{{ lesson.description|truncatewords:20 }}</p>
-            <a href="{% url 'courses:lesson_detail' lesson.id %}" class="btn btn-sm btn-info">{% trans "View" %}</a>
-            <a href="{% url 'courses:create_test' lesson.id %}" class="btn btn-sm btn-secondary">{% trans "Add Test" %}</a>
+            <a href="{% url 'courses:lesson_edit' pk=lesson.id %}" class="btn btn-sm btn-warning">{% trans "Edit" %}</a>
+            <a href="{% url 'courses:lesson_detail' lesson_id=lesson.id %}" class="btn btn-sm btn-info">{% trans "View" %}</a>
+            <a href="{% url 'courses:create_test' lesson_id=lesson.id %}" class="btn btn-sm btn-secondary">{% trans "Add Test" %}</a>
         </div>
         {% endfor %}
     </div>
@@ -46,13 +53,11 @@
                 }
             });
 
-            // Динамическое добавление задержки AOS
             document.querySelectorAll('#lesson-list .list-group-item').forEach(function(item, index) {
                 item.setAttribute('data-aos-delay', index * 100);
             });
         }
 
-        // Инициализация AOS
         AOS.init();
     });
 
