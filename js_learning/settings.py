@@ -105,7 +105,7 @@ LOCALE_PATHS = [
     BASE_DIR / 'locale',
 ]
 
-MAX_TEST_ATTEMPTS = 5
+MAX_TEST_ATTEMPTS = 10
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
