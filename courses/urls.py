@@ -24,6 +24,8 @@ urlpatterns = [
     path('course/<int:course_id>/reorder-lessons/', views.reorder_lessons, name='reorder_lessons'),
     path('lesson/<int:pk>/edit/', views.LessonUpdateView.as_view(), name='lesson_edit'),
     path('lesson/<int:lesson_id>/', views.LessonDetailView.as_view(), name='lesson_detail'),
+    path('lesson/<int:lesson_id>/preview/', views.lesson_preview, name='lesson_preview'),
+    path('test/<int:test_id>/questions/', views.manage_test_questions, name='manage_test_questions'),
     path('lesson/<int:lesson_id>/test/create/', views.create_test, name='create_test'),
     path('test/<int:test_id>/questions/', views.manage_test_questions, name='manage_test_questions'),
     path('test/<int:test_id>/add-question/', views.add_question, name='add_question'),
@@ -33,5 +35,6 @@ urlpatterns = [
     path('answer/<int:pk>/edit/', views.AnswerUpdateView.as_view(), name='edit_answer'),
     path('answer/<int:pk>/delete/', views.AnswerDeleteView.as_view(), name='delete_answer'),
     path('lesson/<int:lesson_id>/test/result/', views.test_result, name='test_result'),
+    path('test/<int:test_id>/results/', views.manage_test_results, name='manage_test_results'),
     path('lesson/<int:lesson_id>/test/results/', views.test_result, name='test_results'),
 ]

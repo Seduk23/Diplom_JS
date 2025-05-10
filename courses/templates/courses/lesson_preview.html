@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Lesson Preview" %} - {{ lesson.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5" data-aos="fade-up">
+    <h1 class="mb-4">{% trans "Preview Lesson" %}: {{ lesson.title }}</h1>
+    {% include 'partials/messages.html' %}
+
+    <!-- Детали урока -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{% trans "Lesson Details" %}</h5>
+            <p><strong>{% trans "Title" %}:</strong> {{ lesson.title }}</p>
+            {% if lesson.description %}
+            <p><strong>{% trans "Description" %}:</strong> {{ lesson.description|safe }}</p>
+            {% endif %}
+            {% if lesson.content %}
+            <p><strong>{% trans "Content" %}:</strong> {{ lesson.content|linebreaks }}</p>
+            {% endif %}
+            {% if lesson.video_url %}
+            <p><strong>{% trans "Video" %}:</strong> <a href="{{ lesson.video_url }}" target="_blank">{{ lesson.video_url }}</a></p>
+            {% endif %}
+            <p><strong>{% trans "Published" %}:</strong> {{ lesson.is_published|yesno:"Yes,No" }}</p>
+        </div>
+    </div>
+
+    <!-- Тесты -->
+    <h3>{% trans "Tests" %}</h3>
+    {% if tests %}
+    {% for test in tests %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ test.title }}</h5>
+            <p><strong>{% trans "Description" %}:</strong> {{ test.description|safe }}</p>
+            <p><strong>{% trans "Active" %}:</strong> {{ test.is_active|yesno:"Yes,No" }}</p>
+            <p><strong>{% trans "Passing Score" %}:</strong> {{ test.passing_score }}%</p>
+            <h6>{% trans "Questions" %}:</h6>
+            {% if test.questions.exists %}
+            <ul>
+                {% for question in test.questions.all %}
+                <li>
+                    {{ question.text }} (Type: {{ question.get_question_type_display }}, Points: {{ question.points }})
+                    <ul>
+                        {% for answer in question.answers.all %}
+                        <li>{{ answer.text }} {% if answer.is_correct %}(Correct){% endif %}</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>{% trans "No questions added yet." %}</p>
+            {% endif %}
+            <a href="{% url 'courses:manage_test_questions' test_id=test.id %}" class="btn btn-sm btn-outline-primary">{% trans "Manage Questions" %}</a>
+            <a href="{% url 'courses:manage_test_results' test_id=test.id %}" class="btn btn-sm btn-outline-danger">{% trans "Manage Results" %}</a>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>{% trans "No tests created for this lesson." %}</p>
+    <a href="{% url 'courses:create_test' lesson_id=lesson.id %}" class="btn btn-outline-success">{% trans "Create Test" %}</a>
+    {% endif %}
+
+    <a href="{% url 'courses:manage_lessons' course_id=lesson.course.id %}" class="btn btn-outline-secondary mt-4">{% trans "Back to Manage Lessons" %}</a>
+</div>
+{% endblock %}

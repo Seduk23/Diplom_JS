@@ -16,20 +16,36 @@
     </form>
 
     <h3 class="mt-5">{% trans "Lessons" %}</h3>
-    {% if lessons %}
+    {% if lessons_with_tests %}
     <div class="list-group" id="lesson-list">
-        {% for lesson in lessons %}
-        <div class="list-group-item" data-id="{{ lesson.id }}" data-aos="fade-up">
-            <h5>{{ lesson.title }} {% if lesson.is_published %}
+        {% for item in lessons_with_tests %}
+        <div class="list-group-item" data-id="{{ item.lesson.id }}" data-aos="fade-up">
+            <h5>{{ item.lesson.title }} {% if item.lesson.is_published %}
                 <span class="badge bg-success">{% trans "Published" %}</span>
                 {% else %}
                 <span class="badge bg-warning">{% trans "Draft" %}</span>
                 {% endif %}
             </h5>
-            <p>{{ lesson.description|truncatewords:20 }}</p>
-            <a href="{% url 'courses:lesson_edit' pk=lesson.id %}" class="btn btn-sm btn-warning">{% trans "Edit" %}</a>
-            <a href="{% url 'courses:lesson_detail' lesson_id=lesson.id %}" class="btn btn-sm btn-info">{% trans "View" %}</a>
-            <a href="{% url 'courses:create_test' lesson_id=lesson.id %}" class="btn btn-sm btn-secondary">{% trans "Add Test" %}</a>
+            <p>{{ item.lesson.description|truncatewords:20 }}</p>
+            <!-- Тесты для урока -->
+            {% if item.tests %}
+            <h6>{% trans "Tests" %}:</h6>
+            <ul>
+                {% for test in item.tests %}
+                <li>
+                    {{ test.title }} (Questions: {{ test.questions.count }}, Active: {{ test.is_active|yesno:"Yes,No" }})
+                    <a href="{% url 'courses:manage_test_questions' test_id=test.id %}" class="btn btn-sm btn-outline-primary">{% trans "Manage Questions" %}</a>
+                    <a href="{% url 'courses:manage_test_results' test_id=test.id %}" class="btn btn-sm btn-outline-danger">{% trans "Manage Results" %}</a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>{% trans "No tests created for this lesson." %}</p>
+            {% endif %}
+            <a href="{% url 'courses:lesson_edit' pk=item.lesson.id %}" class="btn btn-sm btn-warning">{% trans "Edit" %}</a>
+            <a href="{% url 'courses:lesson_detail' lesson_id=item.lesson.id %}" class="btn btn-sm btn-info">{% trans "View" %}</a>
+            <a href="{% url 'courses:lesson_preview' lesson_id=item.lesson.id %}" class="btn btn-sm btn-outline-info">{% trans "Preview" %}</a>
+            <a href="{% url 'courses:create_test' lesson_id=item.lesson.id %}" class="btn btn-sm btn-secondary">{% trans "Add Test" %}</a>
         </div>
         {% endfor %}
     </div>

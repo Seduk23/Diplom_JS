@@ -10,13 +10,14 @@
     <a href="{% url 'courses:add_question' test.id %}" class="btn btn-primary mb-3" data-aos="fade-right">
         {% trans "Add Question" %}
     </a>
+    <a href="{% url 'courses:manage_test_results' test.id %}" class="btn btn-outline-danger mb-3" data-aos="fade-right">
+        {% trans "Manage Test Results" %}
+    </a>
     {% for question in questions %}
         <div class="card mb-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
             <div class="card-body">
                 <h5 class="card-title">{{ question.text }}</h5>
-                {% with doubled_points=question.points|add:question.points %}
-                    <p class="card-text">{% trans "Points" %}: {{ doubled_points }}</p>
-                {% endwith %}
+                <p class="card-text">{% trans "Points" %}: {{ question.points }}</p>
                 <div class="d-flex gap-2">
                     <a href="{% url 'courses:edit_question' question.id %}" class="btn btn-outline-secondary btn-sm">
                         {% trans "Edit" %}

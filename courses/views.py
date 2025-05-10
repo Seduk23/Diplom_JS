@@ -32,12 +32,10 @@ def check_lesson_access(request, lesson):
         raise PermissionDenied(_("Lesson is not published"))
     check_course_access(user, lesson.course)
     if user.is_student:
-        # Проверка порядка уроков
         lessons = lesson.course.lessons.filter(is_published=True).order_by('id')
         lesson_index = list(lessons).index(lesson)
         if lesson_index > 0:
             prev_lesson = lessons[lesson_index - 1]
-            # Проверяем, что предыдущий урок завершён
             prev_progress = Progress.objects.filter(student=user, lesson=prev_lesson, completed=True).exists()
             if not prev_progress:
                 test = Test.objects.filter(lesson=prev_lesson).first()
@@ -48,7 +46,6 @@ def check_lesson_access(request, lesson):
                 raise PermissionDenied(_("Previous lesson not completed."))
 
 def home(request):
-    """Отображает главную страницу с активными курсами."""
     courses = Course.objects.filter(is_active=True)
     return render(request, 'courses/home.html', {'courses': courses})
 
@@ -86,7 +83,6 @@ class TeacherSignUpView(CreateView):
 
 @login_required
 def student_dashboard(request):
-    """Отображает панель студента с курсами и прогрессом."""
     enrollments = Enrollment.objects.filter(student=request.user).select_related('course')
     progress = {
         enrollment.course.id: {
@@ -118,7 +114,6 @@ def student_dashboard(request):
 
 @login_required
 def admin_dashboard(request):
-    """Отображает панель администратора."""
     if not (request.user.is_staff or request.user.is_admin):
         return redirect('courses:home')
     context = {
@@ -131,7 +126,6 @@ def admin_dashboard(request):
 @login_required
 @teacher_required
 def teacher_dashboard(request):
-    """Отображает панель преподавателя с курсами и результатами тестов."""
     courses = Course.objects.filter(creator=request.user, is_active=True)
     test_results = {
         course.id: TestResult.objects.filter(
@@ -185,7 +179,6 @@ class CourseUpdateView(UpdateView):
 @login_required
 @teacher_required
 def manage_lessons(request, course_id):
-    """Управление уроками курса."""
     course = get_object_or_404(Course, id=course_id, creator=request.user)
     if request.method == 'POST':
         lesson_form = LessonForm(request.POST, request.FILES)
@@ -199,24 +192,27 @@ def manage_lessons(request, course_id):
         lesson_form = LessonForm()
 
     lessons = course.lessons.all().order_by('order')
+    lessons_with_tests = [
+        {
+            'lesson': lesson,
+            'tests': Test.objects.filter(lesson=lesson, is_active=True).select_related('lesson')
+        } for lesson in lessons
+    ]
     return render(request, 'courses/manage_lessons.html', {
         'course': course,
-        'lessons': lessons,
+        'lessons_with_tests': lessons_with_tests,
         'lesson_form': lesson_form
     })
 
 @login_required
 def delete_course(request, course_id):
     course = get_object_or_404(Course, id=course_id)
-    
-    # Проверка прав
     if request.user != course.creator and not request.user.is_superuser:
         messages.error(request, "У вас нет прав для удаления этого курса.")
         return redirect('courses:teacher_dashboard')
     
     if request.method == 'POST':
         try:
-            # Удаление связанных объектов
             Test.objects.filter(lesson__course=course).delete()
             Lesson.objects.filter(course=course).delete()
             Enrollment.objects.filter(course=course).delete()
@@ -233,7 +229,6 @@ def delete_course(request, course_id):
 @login_required
 @teacher_required
 def reorder_lessons(request, course_id):
-    """Переупорядочивание уроков."""
     if request.method == 'POST':
         course = get_object_or_404(Course, id=course_id, creator=request.user)
         order = request.POST.getlist('order[]')
@@ -245,7 +240,6 @@ def reorder_lessons(request, course_id):
 @login_required
 @teacher_required
 def create_test(request, lesson_id):
-    """Создание теста для урока."""
     lesson = get_object_or_404(Lesson, id=lesson_id, course__creator=request.user)
     if request.method == 'POST':
         form = TestForm(request.POST)
@@ -262,7 +256,6 @@ def create_test(request, lesson_id):
 @login_required
 @teacher_required
 def manage_test_questions(request, test_id):
-    """Управление вопросами теста."""
     test = get_object_or_404(Test, id=test_id, lesson__course__creator=request.user)
     if request.method == 'POST':
         question_form = QuestionForm(request.POST)
@@ -285,7 +278,6 @@ def manage_test_questions(request, test_id):
 @login_required
 @teacher_required
 def add_question(request, test_id):
-    """Добавление вопроса и ответов к тесту."""
     test = get_object_or_404(Test, id=test_id, lesson__course__creator=request.user)
     if request.method == 'POST':
         question_form = QuestionForm(request.POST)
@@ -403,7 +395,6 @@ class AnswerDeleteView(DeleteView):
 
 @login_required
 def course_detail(request, course_id):
-    """Отображает детали курса."""
     course = get_object_or_404(Course, id=course_id)
     check_course_access(request.user, course)
     lessons = course.lessons.filter(is_published=True).order_by('order')
@@ -417,7 +408,6 @@ def course_detail(request, course_id):
 @login_required
 @student_required
 def enroll_course(request, course_id):
-    """Запись студента на курс."""
     course = get_object_or_404(Course, id=course_id, is_active=True)
     Enrollment.objects.get_or_create(student=request.user, course=course)
     messages.success(request, _(f"You are enrolled in {course.title}"))
@@ -426,7 +416,6 @@ def enroll_course(request, course_id):
 @login_required
 @student_required
 def unenroll_course(request, course_id):
-    """Отмена записи студента с курса."""
     course = get_object_or_404(Course, id=course_id)
     Enrollment.objects.filter(student=request.user, course=course).delete()
     messages.success(request, _(f"You have unenrolled from {course.title}"))
@@ -495,51 +484,58 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
         context["prev_lesson"] = lessons.filter(id__lt=lesson.id).last()
         context["next_lesson"] = lessons.filter(id__gt=lesson.id).first()
 
-        # Проверяем наличие теста
-        test = Test.objects.filter(lesson=lesson).first()
-        context["has_test"] = bool(test)
-        context["tests"] = [test] if test else []
-        context["has_questions"] = test.questions.exists() if test else False
+        tests = Test.objects.filter(lesson=lesson, is_active=True)
+        context["has_test"] = tests.exists()
+        context["tests"] = [
+            {
+                'test': test,
+                'has_questions': test.questions.exists(),
+                'form': None,
+                'attempt_number': None
+            } for test in tests
+        ]
 
-        # Проверяем прогресс студента
-        context["can_access_next_lesson"] = True
-        if self.request.user.is_student and context["has_test"]:
+        if self.request.user.is_student:
+            context["last_test_result"] = TestResult.objects.filter(
+                student=self.request.user, lesson=lesson
+            ).order_by('-completed_at').first()
+
+            for test_data in context["tests"]:
+                test = test_data['test']
+                attempt_number = TestResult.objects.filter(
+                    student=self.request.user, lesson=lesson
+                ).count() + 1
+                if attempt_number > settings.MAX_TEST_ATTEMPTS:
+                    messages.error(
+                        self.request,
+                        _("You have exceeded the maximum number of attempts for test: ") + test.title
+                    )
+                    test_data['form'] = None
+                elif test_data['has_questions']:
+                    test_data['form'] = TestSubmissionForm(test=test)
+                    test_data['attempt_number'] = attempt_number
+                else:
+                    messages.warning(
+                        self.request,
+                        _("Test ") + test.title + _(" has no questions yet. Please contact your teacher.")
+                    )
+                    test_data['form'] = None
+
             progress = Progress.objects.filter(
                 student=self.request.user, lesson=lesson, completed=True
             ).exists()
             context["can_access_next_lesson"] = progress
-
-        # Форма теста для студентов
-        if self.request.user.is_student and context["has_test"] and context["has_questions"]:
-            attempt_number = TestResult.objects.filter(
-                student=self.request.user, lesson=lesson
-            ).count() + 1
-            if attempt_number > settings.MAX_TEST_ATTEMPTS:
-                messages.error(
-                    self.request,
-                    _("You have exceeded the maximum number of attempts for this test.")
-                )
-                context["form"] = None
-            else:
-                context["form"] = TestSubmissionForm(test=test)
-                context["attempt_number"] = attempt_number
         else:
-            context["form"] = None
-            if self.request.user.is_student and context["has_test"] and not context["has_questions"]:
-                messages.warning(
-                    self.request,
-                    _("This test has no questions yet. Please contact your teacher.")
-                )
+            context["can_access_next_lesson"] = True
+            context["last_test_result"] = None
 
-        # Отладочная информация
         context["debug"] = {
             "is_student": self.request.user.is_student,
             "has_test": context["has_test"],
-            "test_exists": Test.objects.filter(lesson=lesson).exists(),
-            "test_count": Test.objects.filter(lesson=lesson).count(),
-            "test_title": test.title if test else "No test",
-            "has_questions": context["has_questions"],
-            "question_count": test.questions.count() if test else 0,
+            "test_count": tests.count(),
+            "test_titles": [test.title for test in tests],
+            "has_questions": [test.questions.exists() for test in tests],
+            "question_count": [test.questions.count() for test in tests],
             "progress_completed": Progress.objects.filter(
                 student=self.request.user, lesson=lesson, completed=True
             ).exists(),
@@ -547,18 +543,20 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
                 student=self.request.user, lesson=lesson
             ).count(),
             "form_errors": None,
-            "post_data": None
+            "post_data": None,
+            "last_test_result": context["last_test_result"].score if context["last_test_result"] else None
         }
 
         return context
 
     def post(self, request, *args, **kwargs):
-        self.object = self.get_object()  # Загружаем объект урока
+        self.object = self.get_object()
         lesson = self.object
-        test = Test.objects.filter(lesson=lesson).first()
+        test_id = request.POST.get('test_id')
+        test = get_object_or_404(Test, id=test_id, lesson=lesson)
 
-        if not request.user.is_student or not test or not test.questions.exists():
-            messages.error(request, _("No test or questions available for this lesson."))
+        if not request.user.is_student or not test.questions.exists():
+            messages.error(request, _("No questions available for this test."))
             return redirect("courses:lesson_detail", lesson_id=lesson.id)
 
         attempt_number = TestResult.objects.filter(
@@ -604,13 +602,46 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
             messages.error(request, _("Invalid test submission."))
             context["debug"]["form_errors"] = form.errors.as_json()
 
-        context["form"] = form
+        for test_data in context["tests"]:
+            if test_data['test'].id == test.id:
+                test_data['form'] = form
         return self.render_to_response(context)
+
+@login_required
+@teacher_required
+def lesson_preview(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id, course__creator=request.user)
+    tests = Test.objects.filter(lesson=lesson, is_active=True).prefetch_related('questions__answers')
+    return render(request, 'courses/lesson_preview.html', {
+        'lesson': lesson,
+        'tests': tests
+    })
+
+@login_required
+@teacher_required
+def manage_test_results(request, test_id):
+    test = get_object_or_404(Test, id=test_id, lesson__course__creator=request.user)
+    results = TestResult.objects.filter(lesson=test.lesson).select_related('student')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'delete_all':
+            results.delete()
+            messages.success(request, _("All test results for this test have been deleted."))
+        elif action == 'delete_student':
+            student_id = request.POST.get('student_id')
+            results.filter(student_id=student_id).delete()
+            messages.success(request, _("Test results for the selected student have been deleted."))
+        return redirect('courses:manage_test_results', test_id=test.id)
+
+    return render(request, 'courses/manage_test_results.html', {
+        'test': test,
+        'results': results
+    })
 
 @login_required
 @student_required
 def test_result(request, lesson_id):
-    """Отображает результаты теста для студента."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
     check_lesson_access(request, lesson)
     results = TestResult.objects.filter(student=request.user, lesson=lesson).order_by('-completed_at')
@@ -630,7 +661,6 @@ def test_result(request, lesson_id):
     })
 
 def process_test_answers(test, request):
-    """Обрабатывает ответы на тест и возвращает баллы и словарь ответов."""
     answers = {}
     score = 0
     total_points = sum(q.points for q in test.questions.all())
@@ -651,7 +681,6 @@ def process_test_answers(test, request):
     return score, total_points, answers
 
 def update_test_result(result, score, total_points, messages, test, lesson, request):
-    """Обновляет или создаёт результат теста."""
     percentage = (score / total_points * 100) if total_points else 0
     if result:
         result.score = percentage

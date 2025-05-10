@@ -49,27 +49,29 @@
             </div>
             {% endif %}
 
-            <!-- Слайд 4: Тест (для студентов) -->
+            <!-- Слайды для тестов (для студентов) -->
             {% if user.is_student and has_test %}
+            {% for test_data in tests %}
             <div class="carousel-item">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">{{ tests.0.title }}</h5>
-                        <p class="card-text">{{ tests.0.description|safe }}</p>
-                        {% if lesson.testresult_set.first %}
+                        <h5 class="card-title">{{ test_data.test.title }}</h5>
+                        <p class="card-text">{{ test_data.test.description|safe }}</p>
+                        {% if last_test_result %}
                         <p class="card-text">
-                            {% trans "Your last score" %}: {{ lesson.testresult_set.first.score }}%
+                            {% trans "Your last score" %}: {{ last_test_result.score }}%
                             (<a href="{% url 'courses:test_results' lesson_id=lesson.id %}">{% trans "View all results" %}</a>)
                         </p>
                         {% endif %}
                         <!-- Форма теста -->
-                        {% if form %}
-                        <form method="post" class="mt-3 test-form" id="testForm">
+                        {% if test_data.form %}
+                        <form method="post" class="mt-3 test-form" id="testForm_{{ test_data.test.id|escapejs }}">
                             {% csrf_token %}
-                            {{ form.as_p }}
-                            <button type="submit" class="btn btn-primary" id="submitTest">{% trans "Submit Test" %}</button>
+                            <input type="hidden" name="test_id" value="{{ test_data.test.id|escapejs }}">
+                            {{ test_data.form.as_p }}
+                            <button type="submit" class="btn btn-primary" id="submitTest_{{ test_data.test.id|escapejs }}">{% trans "Submit Test" %}</button>
                         </form>
-                        {% elif has_questions %}
+                        {% elif test_data.has_questions %}
                         <p class="text-danger">{% trans "You have exceeded the maximum number of attempts for this test." %}</p>
                         {% else %}
                         <p class="text-warning">{% trans "This test has no questions yet. Please contact your teacher." %}</p>
@@ -77,6 +79,9 @@
                     </div>
                 </div>
             </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-warning">{% trans "No tests available for this lesson." %}</p>
             {% endif %}
         </div>
 
@@ -108,25 +113,37 @@
         <p class="text-warning">{% trans "Please pass the test with the required score to unlock the next lesson." %}</p>
         {% endif %}
     </div>
+
+    <!-- Отладочная информация -->
+    {% if debug %}
+    <div class="card mt-4" data-aos="fade-up">
+        <div class="card-body">
+            <h5 class="card-title">Debug Info</h5>
+            <pre>{{ debug|safe }}</pre>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const testForm = document.getElementById('testForm');
-        if (testForm) {
-            testForm.addEventListener('submit', function(e) {
-                console.log('Form submitted');
-            });
-        }
+document.addEventListener('DOMContentLoaded', function() {
+    // Находим все формы тестов
+    const testForms = document.querySelectorAll('.test-form');
+    testForms.forEach(function(form) {
+        const testId = form.id.replace('testForm_', '');
+        form.addEventListener('submit', function(e) {
+            console.log('Form submitted for test ' + testId);
+        });
 
-        const submitButton = document.getElementById('submitTest');
+        const submitButton = document.getElementById('submitTest_' + testId);
         if (submitButton) {
             submitButton.addEventListener('click', function(e) {
-                console.log('Submit button clicked');
+                console.log('Submit button clicked for test ' + testId);
             });
         }
     });
+});
 </script>
 {% endblock %}
 {% endblock %}
