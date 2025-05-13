@@ -11,38 +11,38 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-3">
-            <label for="{{ form.title.id_for_label }}" class="form-label">{% trans "Title" %}</label>
+            <label for="{{ form.title.id_for_label }}" class="form-label">{% trans "Заголовок" %}</label>
             {{ form.title }}
             {% if form.title.errors %}
                 <div class="invalid-feedback d-block">{{ form.title.errors }}</div>
             {% endif %}
         </div>
         <div class="mb-3">
-            <label for="{{ form.description.id_for_label }}" class="form-label">{% trans "Description" %}</label>
+            <label for="{{ form.description.id_for_label }}" class="form-label">{% trans "Описание" %}</label>
             {{ form.description }}
             {% if form.description.errors %}
                 <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
             {% endif %}
         </div>
         <div class="mb-3">
-            <label for="{{ form.image.id_for_label }}" class="form-label">{% trans "Image" %}</label>
+            <label for="{{ form.image.id_for_label }}" class="form-label">{% trans "Изображение" %}</label>
             {{ form.image }}
             {% if form.image.errors %}
                 <div class="invalid-feedback d-block">{{ form.image.errors }}</div>
             {% endif %}
             {% if form.instance.image %}
-                <p>{% trans "Current image" %}: <img src="{{ form.instance.image.url }}" alt="Course Image" style="max-width: 200px;" /></p>
+                <p>{% trans "Нужное изображение" %}: <img src="{{ form.instance.image.url }}" alt="Course Image" style="max-width: 200px;" /></p>
             {% endif %}
         </div>
         <div class="mb-3 form-check">
             {{ form.is_active }}
-            <label for="{{ form.is_active.id_for_label }}" class="form-check-label">{% trans "Is Active" %}</label>
+            <label for="{{ form.is_active.id_for_label }}" class="form-check-label">{% trans "Подтвержденный" %}</label>
             {% if form.is_active.errors %}
                 <div class="invalid-feedback d-block">{{ form.is_active.errors }}</div>
             {% endif %}
         </div>
-        <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
-        <a href="{% url 'courses:teacher_dashboard' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+        <button type="submit" class="btn btn-primary">{% trans "Сохранить" %}</button>
+        <a href="{% url 'courses:teacher_dashboard' %}" class="btn btn-secondary">{% trans "Отмена" %}</a>
     </form>
 </div>
 {% endblock %}

@@ -1,33 +1,33 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Admin Dashboard" %}{% endblock %}
+{% block title %}{% trans "Панель администратора" %}{% endblock %}
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
-    <h1>{% trans "Admin Dashboard" %}</h1>
-    <h3>{% trans "Students" %}</h3>
+    <h1>{% trans "Панель администратора" %}</h1>
+    <h3>{% trans "Студенты" %}</h3>
     <ul class="list-group mb-4">
         {% for student in students %}
             <li class="list-group-item" data-aos="fade-right">{{ student.username }}</li>
         {% empty %}
-            <li class="list-group-item">{% trans "No students registered." %}</li>
+            <li class="list-group-item">{% trans "Нет зарегситрированных студентов." %}</li>
         {% endfor %}
     </ul>
-    <h3>{% trans "Teachers" %}</h3>
+    <h3>{% trans "Учителя" %}</h3>
     <ul class="list-group mb-4">
         {% for teacher in teachers %}
             <li class="list-group-item" data-aos="fade-right">{{ teacher.username }}</li>
         {% empty %}
-            <li class="list-group-item">{% trans "No teachers registered." %}</li>
+            <li class="list-group-item">{% trans "Нет зарегистрированных учителей." %}</li>
         {% endfor %}
     </ul>
-    <h3>{% trans "Courses" %}</h3>
+    <h3>{% trans "Курсы" %}</h3>
     <ul class="list-group">
         {% for course in courses %}
             <li class="list-group-item" data-aos="fade-right">{{ course.title }}</li>
         {% empty %}
-            <li class="list-group-item">{% trans "No courses available." %}</li>
+            <li class="list-group-item">{% trans "Нет курсов" %}</li>
         {% endfor %}
     </ul>
 </div>

@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Edit Answer" %} - {{ answer.text|truncatechars:30 }}{% endblock %}
+{% block title %}{% trans "Редактировать ответ" %} - {{ answer.text|truncatechars:30 }}{% endblock %}
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
-    <h1>{% trans "Edit Answer" %}</h1>
+    <h1>{% trans "Редактировать ответ " %}</h1>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
-        <a href="{% url 'courses:edit_question' answer.question.id %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+        <button type="submit" class="btn btn-primary">{% trans "Сохранить" %}</button>
+        <a href="{% url 'courses:edit_question' answer.question.id %}" class="btn btn-secondary">{% trans "Отмена" %}</a>
     </form>
 </div>
 {% endblock %}

@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Welcome to JS Learning" %}{% endblock %}
+{% block title %}{% trans "Добро пожаловать на нашу платформу!" %}{% endblock %}
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
-    <h1>{% trans "Welcome to Our Educational Platform" %}</h1>
-    <p>{% trans "Learn JavaScript with our interactive courses!" %}</p>
-    <h3>{% trans "Available Courses" %}</h3>
+    <h1>{% trans "Приветсвуем вас на нашей образовательной платформе" %}</h1>
+    <p>{% trans "Начни изучать JavaScript с помощью наших курсов!" %}</p>
+    <h3>{% trans "Доступные курсы" %}</h3>
     <div class="row">
         {% for course in courses %}
             <div class="col-md-4 mb-4" data-aos="fade-up">
@@ -18,12 +18,12 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ course.title }}</h5>
                         <p class="card-text">{{ course.description|truncatewords:20 }}</p>
-                        <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-primary">{% trans "View Course" %}</a>
+                        <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-primary">{% trans "Просмотр курсов" %}</a>
                     </div>
                 </div>
             </div>
         {% empty %}
-            <p>{% trans "No courses available." %}</p>
+            <p>{% trans "Нет доступных курсов." %}</p>
         {% endfor %}
     </div>
 </div>

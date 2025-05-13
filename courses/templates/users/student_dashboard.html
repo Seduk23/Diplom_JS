@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load i18n course_tags %}
 
-{% block title %}{% trans "Student Dashboard" %}{% endblock %}
+{% block title %}{% trans "Панель студента" %}{% endblock %}
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
-    <h1 class="mb-4">{% trans "My Courses" %}</h1>
+    <h1 class="mb-4">{% trans "Мои курсы" %}</h1>
 
     {% if enrollments %}
         <div class="row">
@@ -19,8 +19,8 @@
         </div>
     {% else %}
         <div class="alert alert-info" data-aos="fade-up">
-            {% trans "You are not enrolled in any courses." %}
-            <a href="{% url 'courses:home' %}" class="alert-link">{% trans "Browse courses" %}</a>
+            {% trans "Нет курсов на которые вы подписались." %}
+            <a href="{% url 'courses:home' %}" class="alert-link">{% trans "Просмотреть доступные курсы" %}</a>
         </div>
     {% endif %}
 </div>

@@ -1,13 +1,13 @@
 {% load i18n %}
 {% extends 'base.html' %}
 
-{% block title %}{% trans "Logged Out" %}{% endblock %}
+{% block title %}{% trans "Выйти" %}{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <h1>{% trans "Logged Out" %}</h1>
-    <p>{% trans "You have been successfully logged out." %}</p>
-    <a href="{% url 'courses:login' %}" class="btn btn-primary">{% trans "Log In Again" %}</a>
-    <a href="{% url 'courses:home' %}" class="btn btn-secondary">{% trans "Home" %}</a>
+    <h1>{% trans "Выйти" %}</h1>
+    <p>{% trans "Вы успешно вышли из аккаунта." %}</p>
+    <a href="{% url 'courses:login' %}" class="btn btn-primary">{% trans "Войти" %}</a>
+    <a href="{% url 'courses:home' %}" class="btn btn-secondary">{% trans "Домой" %}</a>
 </div>
 {% endblock %}

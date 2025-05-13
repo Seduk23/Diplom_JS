@@ -3,9 +3,9 @@
 
 {% block title %}
     {% if role == 'student' %}
-        {% trans "Student Signup" %}
+        {% trans "Регистрация студента" %}
     {% else %}
-        {% trans "Teacher Signup" %}
+        {% trans "Регистрация преподавателя" %}
     {% endif %}
 {% endblock %}
 {% include 'partials/messages.html' %}
@@ -17,9 +17,9 @@
                 <div class="card-header">
                     <h4>
                         {% if role == 'student' %}
-                            {% trans "Student Signup" %}
+                            {% trans "Регистрация студента" %}
                         {% else %}
-                            {% trans "Teacher Signup" %}
+                            {% trans "Регистрация преподавателя" %}
                         {% endif %}
                     </h4>
                 </div>
@@ -27,12 +27,12 @@
                     <form method="post">
                         {% csrf_token %}
                         {{ form.as_p }}
-                        <button type="submit" class="btn btn-primary">{% trans "Sign Up" %}</button>
+                        <button type="submit" class="btn btn-primary">{% trans "Зарегистрироваться" %}</button>
                     </form>
                 </div>
                 <div class="card-footer text-center">
-                    {% trans "Already have an account?" %}
-                    <a href="{% url 'courses:login' %}">{% trans "Log in" %}</a>
+                    {% trans "У вас уже есть профиль?" %}
+                    <a href="{% url 'courses:login' %}">{% trans "Войти" %}</a>
                 </div>
             </div>
         </div>
