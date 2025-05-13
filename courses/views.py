@@ -154,7 +154,7 @@ class CourseCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = _("Create New Course")
+        context['title'] = _("Создать новый курс")
         return context
 
 @method_decorator([login_required, teacher_required], name='dispatch')
@@ -508,7 +508,7 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
                 if attempt_number > settings.MAX_TEST_ATTEMPTS:
                     messages.error(
                         self.request,
-                        _("You have exceeded the maximum number of attempts for test: ") + test.title
+                        _("Вы достигли максимального количества попыток ") + test.title
                     )
                     test_data['form'] = None
                 elif test_data['has_questions']:
@@ -517,7 +517,7 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
                 else:
                     messages.warning(
                         self.request,
-                        _("Test ") + test.title + _(" has no questions yet. Please contact your teacher.")
+                        _("Тест ") + test.title + _(" Нет вопросов. Сообщите преподавателю об этом.")
                     )
                     test_data['form'] = None
 
