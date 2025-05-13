@@ -10,10 +10,10 @@ class CourseForm(forms.ModelForm):
         model = Course
         fields = ['title', 'description', 'image', 'is_active']
         labels = {
-            'title': _("Title"),
-            'description': _("Description"),
-            'image': _("Image"),
-            'is_active': _("Is Active"),
+            'title': _("Заголовок"),
+            'description': _("Описание"),
+            'image': _("Изображение"),
+            'is_active': _("Опубликован"),
         }
 
 class LessonForm(forms.ModelForm):
@@ -21,11 +21,11 @@ class LessonForm(forms.ModelForm):
         model = Lesson
         fields = ['title', 'description', 'content', 'video_url', 'is_published']
         labels = {
-            'title': _("Title"),
-            'description': _("Description"),
-            'content': _("Content"),
-            'video_url': _("Video URL"),
-            'is_published': _("Is Published"),
+            'title': _("Заголовок"),
+            'description': _("Описание"),
+            'content': _("Материалы"),
+            'video_url': _("Ссылка на видео"),
+            'is_published': _("Опубликован"),
         }
 
 class TestForm(forms.ModelForm):
@@ -33,10 +33,10 @@ class TestForm(forms.ModelForm):
         model = Test
         fields = ['title', 'description', 'passing_score', 'is_active']
         labels = {
-            'title': _("Title"),
-            'description': _("Description"),
-            'passing_score': _("Passing Score"),
-            'is_active': _("Is Active"),
+            'title': _("Заголовок"),
+            'description': _("Описание"),
+            'passing_score': _("Минимальный балл"),
+            'is_active': _("Опубликован"),
         }
 
 class QuestionForm(forms.ModelForm):
@@ -65,7 +65,7 @@ class StudentSignUpForm(forms.ModelForm):
         model = User
         fields = ['username', 'email', 'password']
         labels = {
-            'username': _("Username"),
+            'username': _("Имя пользователя"),
             'email': _("Email"),
         }
 
@@ -84,7 +84,7 @@ class TeacherSignUpForm(forms.ModelForm):
         model = User
         fields = ['username', 'email', 'password']
         labels = {
-            'username': _("Username"),
+            'username': _("Имя пользователя"),
             'email': _("Email"),
         }
 
