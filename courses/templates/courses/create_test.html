@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load i18n course_tags %}
 
-{% block title %}{% trans "Create Test" %}{% endblock %}
+{% block title %}{% trans "Создание теста" %}{% endblock %}
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
-    <h1 class="mb-4">{% trans "Create Test for" %} {{ lesson.title }}</h1>
+    <h1 class="mb-4">{% trans "Создать тест" %} {{ lesson.title }}</h1>
     {% include 'partials/messages.html' %}
 
     <div class="card mb-4" data-aos="fade-up">
@@ -13,8 +13,8 @@
             <form method="post" data-aos="fade-up">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button type="submit" class="btn btn-primary" data-aos="fade-right">{% trans "Create Test" %}</button>
-                <a href="{% url 'courses:manage_lessons' lesson.course.id %}" class="btn btn-outline-secondary" data-aos="fade-right">{% trans "Back to Lessons" %}</a>
+                <button type="submit" class="btn btn-primary" data-aos="fade-right">{% trans "Создание теста" %}</button>
+                <a href="{% url 'courses:manage_lessons' lesson.course.id %}" class="btn btn-outline-secondary" data-aos="fade-right">{% trans "Вернуться к урокам" %}</a>
             </form>
         </div>
     </div>

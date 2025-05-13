@@ -1,29 +1,29 @@
 {% extends 'base.html' %}
 {% load i18n course_tags %}
 
-{% block title %}{% trans "Teacher Dashboard" %}{% endblock %}
+{% block title %}{% trans "Панель преподавателя" %}{% endblock %}
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
-    <h1 class="mb-4">{% trans "My Courses" %}</h1>
+    <h1 class="mb-4">{% trans "Мои курсы" %}</h1>
     {% include 'partials/messages.html' %}
 
-    <h3>{% trans "Your Courses" %}</h3>
+    <h3>{% trans "Ваши курсы" %}</h3>
     {% if courses %}
         <div class="list-group mb-4">
             {% for course in courses %}
                 <div class="list-group-item" data-aos="fade-up">
                     <h5>{{ course.title }}</h5>
                     <p>{{ course.description|truncatewords:20 }}</p>
-                    <a href="{% url 'courses:course_edit' pk=course.id %}" class="btn btn-sm btn-warning">{% trans "Edit Course" %}</a>
-                    <a href="{% url 'courses:manage_lessons' course_id=course.id %}" class="btn btn-sm btn-primary">{% trans "Manage Lessons" %}</a>
-                    <a href="{% url 'courses:course_detail' course_id=course.id %}" class="btn btn-sm btn-info">{% trans "View Course" %}</a>
-                    <a href="{% url 'courses:delete_course' course_id=course.id %}" class="btn btn-sm btn-danger">{% trans "Delete Course" %}</a>
+                    <a href="{% url 'courses:course_edit' pk=course.id %}" class="btn btn-sm btn-warning">{% trans "Редактировать курс" %}</a>
+                    <a href="{% url 'courses:manage_lessons' course_id=course.id %}" class="btn btn-sm btn-primary">{% trans "Управление уроками" %}</a>
+                    <a href="{% url 'courses:course_detail' course_id=course.id %}" class="btn btn-sm btn-info">{% trans "Просмотр курса" %}</a>
+                    <a href="{% url 'courses:delete_course' course_id=course.id %}" class="btn btn-sm btn-danger">{% trans "Удалить курс" %}</a>
                 </div>
             {% endfor %}
         </div>
 
-        <h2 class="mt-5 mb-4">{% trans "Student Test Results" %}</h2>
+        <h2 class="mt-5 mb-4">{% trans "Результаты студентов" %}</h2>
         {% for course in courses %}
             <div class="card mb-4" data-aos="fade-up">
                 <div class="card-body">
@@ -32,10 +32,10 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>{% trans "Student" %}</th>
-                                    <th>{% trans "Lesson" %}</th>
-                                    <th>{% trans "Score" %}</th>
-                                    <th>{% trans "Attempts" %}</th>
+                                    <th>{% trans "Студент" %}</th>
+                                    <th>{% trans "Урок" %}</th>
+                                    <th>{% trans "Результат" %}</th>
+                                    <th>{% trans "Попытки" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -50,15 +50,15 @@
                             </tbody>
                         </table>
                     {% else %}
-                        <p class="text-muted">{% trans "No test results yet." %}</p>
+                        <p class="text-muted">{% trans "Нет теста." %}</p>
                     {% endif %}
                 </div>
             </div>
         {% endfor %}
     {% else %}
         <div class="alert alert-info" data-aos="fade-up">
-            {% trans "You have not created any courses." %}
-            <a href="{% url 'courses:course_create' %}" class="alert-link">{% trans "Create a course" %}</a>
+            {% trans "Вы еще не создали ни одного курса." %}
+            <a href="{% url 'courses:course_create' %}" class="alert-link">{% trans "Создать курс" %}</a>
         </div>
     {% endif %}
 </div>

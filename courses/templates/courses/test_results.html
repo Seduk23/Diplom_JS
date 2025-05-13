@@ -1,31 +1,31 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Test Results" %}{% endblock %}
+{% block title %}{% trans "Результаты теста" %}{% endblock %}
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
-    <h1>{% trans "Test Results for" %} {{ lesson.title }}</h1>
+    <h1>{% trans "Результаты теста" %} {{ lesson.title }}</h1>
     {% include 'partials/messages.html' %}
     {% if results %}
         <div class="list-group mb-4" data-aos="fade-up">
             {% for result in results %}
                 <div class="list-group-item">
                     <h5 class="mb-1">
-                        {% trans "Attempt" %} {{ result.attempt_number }} ({{ result.created_at|date:"SHORT_DATETIME_FORMAT" }})
+                        {% trans "Попытки" %} {{ result.attempt_number }} ({{ result.created_at|date:"SHORT_DATETIME_FORMAT" }})
                     </h5>
-                    <p class="mb-1">{% trans "Score" %}: {{ result.score }}%</p>
+                    <p class="mb-1">{% trans "Результат" %}: {{ result.score }}%</p>
                 </div>
             {% endfor %}
         </div>
         <a href="{% url 'courses:lesson_detail' lesson_id=lesson.id %}" class="btn btn-primary">
-            {% trans "Retake Test" %}
+            {% trans "Пройти тест заново" %}
         </a>
     {% else %}
-        <p>{% trans "No test results available." %}</p>
+        <p>{% trans "Нет результатов теста." %}</p>
     {% endif %}
     <a href="{% url 'courses:lesson_detail' lesson_id=lesson.id %}" class="btn btn-secondary mt-3">
-        {% trans "Back to Lesson" %}
+        {% trans "Вернуться к урокам" %}
     </a>
 </div>
 {% endblock %}

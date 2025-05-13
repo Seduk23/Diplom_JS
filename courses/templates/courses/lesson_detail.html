@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Lesson" %} {{ lesson.title }}{% endblock %}
+{% block title %}{% trans "Урок" %} {{ lesson.title }}{% endblock %}
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
@@ -16,7 +16,7 @@
             <div class="carousel-item active">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">{% trans "Description" %}</h5>
+                        <h5 class="card-title">{% trans "Описание" %}</h5>
                         <p class="card-text">{{ lesson.description|safe }}</p>
                     </div>
                 </div>
@@ -28,7 +28,7 @@
             <div class="carousel-item {% if not lesson.description %}active{% endif %}">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">{% trans "Content" %}</h5>
+                        <h5 class="card-title">{% trans "Материалы" %}</h5>
                         <div class="card-text">{{ lesson.content|linebreaks }}</div>
                     </div>
                 </div>
@@ -40,7 +40,7 @@
             <div class="carousel-item">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">{% trans "Video" %}</h5>
+                        <h5 class="card-title">{% trans "Видео" %}</h5>
                         <div class="embed-responsive embed-responsive-16by9">
                             <iframe class="embed-responsive-item" src="{{ lesson.video_url }}" allowfullscreen></iframe>
                         </div>
@@ -60,7 +60,7 @@
                         {% if last_test_result %}
                         <p class="card-text">
                             {% trans "Your last score" %}: {{ last_test_result.score }}%
-                            (<a href="{% url 'courses:test_results' lesson_id=lesson.id %}">{% trans "View all results" %}</a>)
+                            (<a href="{% url 'courses:test_results' lesson_id=lesson.id %}">{% trans "Посмотреть все результаты" %}</a>)
                         </p>
                         {% endif %}
                         <!-- Форма теста -->
@@ -69,19 +69,19 @@
                             {% csrf_token %}
                             <input type="hidden" name="test_id" value="{{ test_data.test.id|escapejs }}">
                             {{ test_data.form.as_p }}
-                            <button type="submit" class="btn btn-primary" id="submitTest_{{ test_data.test.id|escapejs }}">{% trans "Submit Test" %}</button>
+                            <button type="submit" class="btn btn-primary" id="submitTest_{{ test_data.test.id|escapejs }}">{% trans "Отправить тест" %}</button>
                         </form>
                         {% elif test_data.has_questions %}
-                        <p class="text-danger">{% trans "You have exceeded the maximum number of attempts for this test." %}</p>
+                        <p class="text-danger">{% trans "Вы достигли максимального количества попыток." %}</p>
                         {% else %}
-                        <p class="text-warning">{% trans "This test has no questions yet. Please contact your teacher." %}</p>
+                        <p class="text-warning">{% trans "В тесте нет вопросов. Обратитесь к преподавателю." %}</p>
                         {% endif %}
                     </div>
                 </div>
             </div>
             {% endfor %}
             {% else %}
-            <p class="text-warning">{% trans "No tests available for this lesson." %}</p>
+            <p class="text-warning">{% trans "Для этого урока нет тестов." %}</p>
             {% endif %}
         </div>
 
@@ -89,11 +89,11 @@
         {% if lesson.description or lesson.content or lesson.video_url or has_test %}
         <button class="carousel-control-prev" type="button" data-bs-target="#lessonCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">{% trans "Previous" %}</span>
+            <span class="visually-hidden">{% trans "Предыдущий" %}</span>
         </button>
         <button class="carousel-control-next" type="button" data-bs-target="#lessonCarousel" data-bs-slide="next">
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">{% trans "Next" %}</span>
+            <span class="visually-hidden">{% trans "Следующий" %}</span>
         </button>
         {% endif %}
     </div>
@@ -102,28 +102,19 @@
     <div class="d-flex justify-content-between mt-4">
         {% if prev_lesson %}
         <a href="{% url 'courses:lesson_detail' lesson_id=prev_lesson.id %}" class="btn btn-outline-secondary" data-aos="fade-right">
-            {% trans "Previous Lesson" %}
+            {% trans "Предыдущий урок" %}
         </a>
         {% endif %}
         {% if next_lesson and can_access_next_lesson %}
         <a href="{% url 'courses:lesson_detail' lesson_id=next_lesson.id %}" class="btn btn-outline-secondary" data-aos="fade-left">
-            {% trans "Next Lesson" %}
+            {% trans "Следующий урок" %}
         </a>
         {% elif next_lesson and user.is_student and has_test and not can_access_next_lesson %}
-        <p class="text-warning">{% trans "Please pass the test with the required score to unlock the next lesson." %}</p>
+        <p class="text-warning">{% trans "Пройдите тест, чтобы получить доступ к следубщему уроку." %}</p>
         {% endif %}
     </div>
 
-    <!-- Отладочная информация -->
-    {% if debug %}
-    <div class="card mt-4" data-aos="fade-up">
-        <div class="card-body">
-            <h5 class="card-title">Debug Info</h5>
-            <pre>{{ debug|safe }}</pre>
-        </div>
-    </div>
-    {% endif %}
-</div>
+    
 
 {% block extra_js %}
 <script>

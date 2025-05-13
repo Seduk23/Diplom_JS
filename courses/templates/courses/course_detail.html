@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n course_tags %}
 
-{% block title %}{% trans "Course" %}: {{ course.title }}{% endblock %}
+{% block title %}{% trans "Курсы" %}: {{ course.title }}{% endblock %}
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
@@ -10,22 +10,22 @@
 
     <div class="card mb-4" data-aos="fade-up">
         <div class="card-body">
-            <h5 class="card-title">{% trans "Course Details" %}</h5>
+            <h5 class="card-title">{% trans "Детали курса" %}</h5>
             <p class="card-text">{{ course.description|safe }}</p>
             {% if user.is_teacher and course.teacher == user %}
-                <a href="{% url 'courses:course_edit' pk=course.pk %}" class="btn btn-primary" data-aos="fade-right">{% trans "Edit Course" %}</a>
-                <a href="{% url 'courses:manage_lessons' course.id %}" class="btn btn-outline-primary" data-aos="fade-right">{% trans "Manage Lessons" %}</a>
+                <a href="{% url 'courses:course_edit' pk=course.pk %}" class="btn btn-primary" data-aos="fade-right">{% trans "Редактировать курс" %}</a>
+                <a href="{% url 'courses:manage_lessons' course.id %}" class="btn btn-outline-primary" data-aos="fade-right">{% trans "Управление уроками" %}</a>
             {% elif user.is_student %}
                 {% if is_enrolled %}
-                    <a href="{% url 'courses:unenroll_course' course.id %}" class="btn btn-outline-danger" data-aos="fade-right">{% trans "Unenroll" %}</a>
+                    <a href="{% url 'courses:unenroll_course' course.id %}" class="btn btn-outline-danger" data-aos="fade-right">{% trans "Отписаться" %}</a>
                 {% else %}
-                    <a href="{% url 'courses:enroll_course' course.id %}" class="btn btn-primary" data-aos="fade-right">{% trans "Enroll" %}</a>
+                    <a href="{% url 'courses:enroll_course' course.id %}" class="btn btn-primary" data-aos="fade-right">{% trans "Подписаться" %}</a>
                 {% endif %}
             {% endif %}
         </div>
     </div>
 
-    <h2 class="mb-4">{% trans "Lessons" %}</h2>
+    <h2 class="mb-4">{% trans "Уроки" %}</h2>
     {% if lessons %}
         <div class="row">
             {% for lesson in lessons %}
@@ -34,7 +34,7 @@
                         <div class="card-body">
                             <h5 class="card-title">{{ lesson.title }}</h5>
                             <p class="card-text">{{ lesson.description|truncatewords:20 }}</p>
-                            <a href="{% url 'courses:lesson_detail' lesson.id %}" class="btn btn-primary" data-aos="fade-right">{% trans "View Lesson" %}</a>
+                            <a href="{% url 'courses:lesson_detail' lesson.id %}" class="btn btn-primary" data-aos="fade-right">{% trans "Просмотреть урок" %}</a>
                         </div>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
         </div>
     {% else %}
         <div class="alert alert-info" data-aos="fade-up">
-            {% trans "No lessons available for this course." %}
+            {% trans "В этом курсе нет уроков." %}
         </div>
     {% endif %}
 </div>

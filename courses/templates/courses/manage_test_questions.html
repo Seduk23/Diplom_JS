@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Manage Questions" %}{% endblock %}
+{% block title %}{% trans "Управление вопросами" %}{% endblock %}
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
-    <h1 class="mb-4">{% trans "Manage Questions for" %} {{ test.title }}</h1>
+    <h1 class="mb-4">{% trans "Упроавление вопросами" %} {{ test.title }}</h1>
     {% include 'partials/messages.html' %}
     <a href="{% url 'courses:add_question' test.id %}" class="btn btn-primary mb-3" data-aos="fade-right">
-        {% trans "Add Question" %}
+        {% trans "Добавить вопрос" %}
     </a>
     <a href="{% url 'courses:manage_test_results' test.id %}" class="btn btn-outline-danger mb-3" data-aos="fade-right">
-        {% trans "Manage Test Results" %}
+        {% trans "Управление результатами теста" %}
     </a>
     {% for question in questions %}
         <div class="card mb-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
@@ -20,17 +20,17 @@
                 <p class="card-text">{% trans "Points" %}: {{ question.points }}</p>
                 <div class="d-flex gap-2">
                     <a href="{% url 'courses:edit_question' question.id %}" class="btn btn-outline-secondary btn-sm">
-                        {% trans "Edit" %}
+                        {% trans "Редактировать" %}
                     </a>
                     <form action="{% url 'courses:delete_question' question.id %}" method="post" class="d-inline">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-danger btn-sm">{% trans "Delete" %}</button>
+                        <button type="submit" class="btn btn-outline-danger btn-sm">{% trans "Удалить" %}</button>
                     </form>
                 </div>
             </div>
         </div>
     {% empty %}
-        <p class="text-muted" data-aos="fade-up">{% trans "No questions yet." %}</p>
+        <p class="text-muted" data-aos="fade-up">{% trans "Вопросов нет." %}</p>
     {% endfor %}
 </div>
 {% endblock %}

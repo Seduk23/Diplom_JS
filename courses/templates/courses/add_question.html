@@ -1,22 +1,22 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Add Question" %} - {{ test.title }}{% endblock %}
+{% block title %}{% trans "Добавить вопрос" %} - {{ test.title }}{% endblock %}
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
-    <h1>{% trans "Add Question to" %} {{ test.title }}</h1>
+    <h1>{% trans "Добавить вопрос" %} {{ test.title }}</h1>
     <form method="post">
         {% csrf_token %}
         {{ question_form.as_p }}
-        <h3>{% trans "Answers" %}</h3>
+        <h3>{% trans "Ответ" %}</h3>
         {% for answer_form in answer_forms %}
             <div class="mb-3">
                 {{ answer_form.as_p }}
             </div>
         {% endfor %}
-        <button type="submit" class="btn btn-primary">{% trans "Add Question" %}</button>
-        <a href="{% url 'courses:manage_test_questions' test.id %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+        <button type="submit" class="btn btn-primary">{% trans "Добавить вопрос" %}</button>
+        <a href="{% url 'courses:manage_test_questions' test.id %}" class="btn btn-secondary">{% trans "Отмена" %}</a>
     </form>
 </div>
 {% endblock %}

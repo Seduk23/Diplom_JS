@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Take Test" %} - {{ test.title }}{% endblock %}
+{% block title %}{% trans "Пройти тест" %} - {{ test.title }}{% endblock %}
 
 {% block content %}
 <div class="container test-container mt-5" data-aos="fade-up">
@@ -14,10 +14,10 @@
             {% endif %}
             <div class="test-info">
                 <span class="badge bg-info">
-                    <i class="bi bi-question-circle"></i> {% trans "Questions" %}: {{ test.questions.count }}
+                    <i class="bi bi-question-circle"></i> {% trans "Вопросы" %}: {{ test.questions.count }}
                 </span>
                 <span class="badge bg-warning text-dark">
-                    <i class="bi bi-check-circle"></i> {% trans "Passing Score" %}: {{ test.passing_score }}%
+                    <i class="bi bi-check-circle"></i> {% trans "Результат прохождения" %}: {{ test.passing_score }}%
                 </span>
             </div>
         </div>
@@ -64,7 +64,7 @@
         
         <div class="test-actions" data-aos="fade-up">
             <button type="submit" class="btn btn-primary btn-lg">
-                <i class="bi bi-send"></i> {% trans "Submit Answers" %}
+                <i class="bi bi-send"></i> {% trans "Отправить ответ" %}
             </button>
         </div>
     </form>

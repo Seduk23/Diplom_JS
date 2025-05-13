@@ -5,8 +5,8 @@
         <p class="card-text">{{ course.description|truncatewords:30 }}</p>
         {% if progress %}
             <p class="card-text">
-                {% trans "Progress" %}: {{ progress.percent }}% 
-                ({{ progress.completed }} / {{ progress.total }} {% trans "lessons" %})
+                {% trans "Прогресс" %}: {{ progress.percent }}% 
+                ({{ progress.completed }} / {{ progress.total }} {% trans "уроки" %})
             </p>
         {% endif %}
         {% if buttons %}
@@ -32,18 +32,18 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteCourseModalLabel{{ course.id }}">{% trans "Confirm Deletion" %}</h5>
+                <h5 class="modal-title" id="deleteCourseModalLabel{{ course.id }}">{% trans "Подтвердить удаление" %}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                {% trans "Are you sure you want to delete the course" %} "{{ course.title }}"? 
-                {% trans "This action cannot be undone." %}
+                {% trans "Удалить курс?" %} "{{ course.title }}"? 
+                {% trans "Это действие нельзя отменить." %}
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Отмена" %}</button>
                 <form action="{% url 'courses:delete_course' course.id %}" method="post">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
+                    <button type="submit" class="btn btn-danger">{% trans "Удалить" %}</button>
                 </form>
             </div>
         </div>

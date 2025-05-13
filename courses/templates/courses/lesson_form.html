@@ -11,28 +11,28 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-3">
-            <label for="{{ form.title.id_for_label }}" class="form-label">{% trans "Title" %}</label>
+            <label for="{{ form.title.id_for_label }}" class="form-label">{% trans "Заголовок" %}</label>
             {{ form.title }}
             {% if form.title.errors %}
                 <div class="invalid-feedback d-block">{{ form.title.errors }}</div>
             {% endif %}
         </div>
         <div class="mb-3">
-            <label for="{{ form.description.id_for_label }}" class="form-label">{% trans "Description" %}</label>
+            <label for="{{ form.description.id_for_label }}" class="form-label">{% trans "Описание" %}</label>
             {{ form.description }}
             {% if form.description.errors %}
                 <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
             {% endif %}
         </div>
         <div class="mb-3">
-            <label for="{{ form.content.id_for_label }}" class="form-label">{% trans "Content" %}</label>
+            <label for="{{ form.content.id_for_label }}" class="form-label">{% trans "Материалы" %}</label>
             {{ form.content }}
             {% if form.content.errors %}
                 <div class="invalid-feedback d-block">{{ form.content.errors }}</div>
             {% endif %}
         </div>
         <div class="mb-3">
-            <label for="{{ form.video_url.id_for_label }}" class="form-label">{% trans "Video URL" %}</label>
+            <label for="{{ form.video_url.id_for_label }}" class="form-label">{% trans "Ссылка на видео" %}</label>
             {{ form.video_url }}
             {% if form.video_url.errors %}
                 <div class="invalid-feedback d-block">{{ form.video_url.errors }}</div>
@@ -40,13 +40,13 @@
         </div>
         <div class="mb-3 form-check">
             {{ form.is_published }}
-            <label for="{{ form.is_published.id_for_label }}" class="form-check-label">{% trans "Is Published" %}</label>
+            <label for="{{ form.is_published.id_for_label }}" class="form-check-label">{% trans "Опубликовать" %}</label>
             {% if form.is_published.errors %}
                 <div class="invalid-feedback d-block">{{ form.is_published.errors }}</div>
             {% endif %}
         </div>
-        <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
-        <a href="{% url 'courses:manage_lessons' course_id=course.id %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+        <button type="submit" class="btn btn-primary">{% trans "Сохранить" %}</button>
+        <a href="{% url 'courses:manage_lessons' course_id=course.id %}" class="btn btn-secondary">{% trans "Отмена" %}</a>
     </form>
 </div>
 {% endblock %}
