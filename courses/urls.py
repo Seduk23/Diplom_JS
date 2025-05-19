@@ -1,5 +1,7 @@
 from django.urls import path
+from js_learning import settings
 from . import views
+from django.conf.urls.static import static
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import views as auth_views
 
@@ -29,6 +31,7 @@ urlpatterns = [
     path('lesson/<int:lesson_id>/test/create/', views.create_test, name='create_test'),
     path('test/<int:test_id>/questions/', views.manage_test_questions, name='manage_test_questions'),
     path('test/<int:test_id>/add-question/', views.add_question, name='add_question'),
+    path('upload_image/', views.upload_image, name='upload_image'),
     path('question/<int:pk>/edit/', views.QuestionUpdateView.as_view(), name='edit_question'),
     path('question/<int:pk>/delete/', views.QuestionDeleteView.as_view(), name='delete_question'),
     path('question/<int:question_id>/answer/add/', views.AnswerCreateView.as_view(), name='add_answer'),
@@ -37,4 +40,4 @@ urlpatterns = [
     path('lesson/<int:lesson_id>/test/result/', views.test_result, name='test_result'),
     path('test/<int:test_id>/results/', views.manage_test_results, name='manage_test_results'),
     path('lesson/<int:lesson_id>/test/results/', views.test_result, name='test_results'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

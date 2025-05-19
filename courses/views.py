@@ -1,3 +1,4 @@
+import os
 from django.utils import timezone
 from django.views.generic import DetailView, CreateView, UpdateView, DeleteView
 from django.shortcuts import render, get_object_or_404, redirect
@@ -11,7 +12,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
-from functools import wraps
+from django.core.files.storage import default_storage
 from django.db.models import Avg, Max, Min
 from .models import Course, Lesson, Test, Question, Answer, TestResult, Enrollment, Progress
 from .forms import (
@@ -203,6 +204,18 @@ def manage_lessons(request, course_id):
         'lessons_with_tests': lessons_with_tests,
         'lesson_form': lesson_form
     })
+
+@login_required
+def upload_image(request):
+    if request.method == 'POST' and request.FILES.get('upload'):
+        file = request.FILES['upload']
+        # Сохранение файла в папку media/uploads/
+        file_path = os.path.join('uploads', file.name)
+        file_path = default_storage.save(file_path, file)
+        # Формируем полный URL для изображения
+        file_url = settings.MEDIA_URL + file_path
+        return JsonResponse({'url': file_url})
+    return JsonResponse({'error': 'Неверный запрос'}, status=400)
 
 @login_required
 def delete_course(request, course_id):

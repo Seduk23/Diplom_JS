@@ -19,7 +19,7 @@
         </div>
         <div class="mb-3">
             <label for="{{ form.description.id_for_label }}" class="form-label">{% trans "Описание" %}</label>
-            {{ form.description }}
+            <textarea name="description" id="id_description" class="form-control">{{ form.description.value|default_if_none:"" }}</textarea>
             {% if form.description.errors %}
                 <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
             {% endif %}
@@ -45,4 +45,71 @@
         <a href="{% url 'courses:teacher_dashboard' %}" class="btn btn-secondary">{% trans "Отмена" %}</a>
     </form>
 </div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.querySelector('#id_description')) {
+            class MyUploadAdapter {
+                constructor(loader) {
+                    this.loader = loader;
+                }
+
+                upload() {
+                    return this.loader.file.then(file => new Promise((resolve, reject) => {
+                        const data = new FormData();
+                        data.append('upload', file);
+
+                        fetch('{% url "courses:upload_image" %}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: data
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.url) {
+                                resolve({ default: data.url });
+                            } else {
+                                reject(data.error || 'Не удалось загрузить изображение.');
+                            }
+                        })
+                        .catch(error => {
+                            reject('Ошибка загрузки изображения: ' + error.message);
+                        });
+                    }));
+                }
+
+                abort() {
+                    // Отмена загрузки, если нужно
+                }
+            }
+
+            function MyCustomUploadAdapterPlugin(editor) {
+                editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+                    return new MyUploadAdapter(loader);
+                };
+            }
+
+            ClassicEditor
+                .create(document.querySelector('#id_description'), {
+                    extraPlugins: [MyCustomUploadAdapterPlugin],
+                    toolbar: [
+                        'heading', '|',
+                        'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
+                        'blockQuote', 'insertTable', 'mediaEmbed', 'imageUpload', 'undo', 'redo'
+                    ],
+                    height: 400
+                })
+                .then(editor => {
+                    console.log('Editor initialized', editor);
+                })
+                .catch(error => {
+                    console.error('Error initializing editor:', error);
+                });
+        }
+    });
+</script>
+{% endblock %}
 {% endblock %}

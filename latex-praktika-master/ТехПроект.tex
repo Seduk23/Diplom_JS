@@ -21,14 +21,12 @@
 
 \subsection{Архитектура системы}
 
-Архитектура платформы следует модели MVC (Model-View-Controller), реализованной через Django, что обеспечивает чёткое разделение ответственности между компонентами системы.
-
-\subsubsection{Описание архитектуры}
+Архитектура платформы следует модели MVC (Model-View-Controller), реализованной через Django, что обеспечивает чёткое разделение ответственности между компонентами системы. Описание архитектуры:
 
 \begin{enumerate}
 	\item {Model} (Модель): Определяет структуру данных в виде таблиц SQLite (courses\_course, courses\_lesson, courses\_test, courses\_question, courses\_answer, users\_user и др.). Модели Django обеспечивают взаимодействие с базой данных через ORM, упрощая операции создания, чтения, обновления и удаления данных (CRUD).
 	\item {View} (Представление): Обрабатывает HTTP-запросы и формирует ответы. Включает функции и классы Django views, которые возвращают HTML-страницы (через шаблоны Django) или JSON-ответы для динамической загрузки данных.
-	\item {Controller} (Контроллер): Реализован через маршрутизацию Django файл (urls.py), направляющую запросы к соответствующим представлениям.
+	\item {Template} (Шаблоны): Реализован через маршрутизацию Django файл (urls.py), направляющую запросы к соответствующим представлениям.
 \end{enumerate}
 
 Основные компоненты системы:
@@ -40,8 +38,8 @@
 \end{enumerate}
 
 Архитектура представлена на диаграмме компонентов (см. рис.~\ref{diag:image}).
-
-\begin{figure}[htp!]
+\newpage
+\begin{figure}[h]
 	\centering{\includegraphics[width=0.7\linewidth]{images/диаграмма1}}
 	\caption{Диаграмма компонентов}
 	\label{diag:image}
@@ -212,7 +210,7 @@
 	\caption{Атрибуты сущности <<Ответы>>\label{answers:table}}\\ \hline
 	Поле & Тип & Обязательное & Описание \\ \hline
 	\endfirsthead
-	\continuecaption{Продолжение таблицы \ref{answers:table}}\\ \hline
+	\continuecaption{Продолжение таблицы \ref{answers:table} -- Атрибуты сущности <<Ответы>>}\\ \hline
 	Поле & Тип & Обязательное & Описание \\ \hline
 	\endhead
 	id & Integer & true & Уникальный идентификатор ответа \\ \hline
