@@ -26,7 +26,7 @@
                 <span class="badge bg-warning">{% trans "Выбрать" %}</span>
                 {% endif %}
             </h5>
-            <p>{{ item.lesson.description|truncatewords:20 }}</p>
+            <p>{{ item.lesson.description|safe|truncatewords:20 }}</p>
             <!-- Тесты для урока -->
             {% if item.tests %}
             <h6>{% trans "Тесты" %}:</h6>
@@ -59,22 +59,126 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Проверка подключения Sortable и инициализация
         var lessonList = document.getElementById('lesson-list');
         if (lessonList) {
-            new Sortable(lessonList, {
-                animation: 150,
-                handle: '.list-group-item',
-                onEnd: function(evt) {
-                    console.log('Lesson order changed');
-                }
-            });
+            if (typeof Sortable === 'undefined') {
+                console.error('Sortable is not defined. Ensure Sortable.js is included in base.html.');
+            } else {
+                new Sortable(lessonList, {
+                    animation: 150,
+                    handle: '.list-group-item',
+                    onEnd: function(evt) {
+                        console.log('Lesson order changed');
+                    }
+                });
 
-            document.querySelectorAll('#lesson-list .list-group-item').forEach(function(item, index) {
-                item.setAttribute('data-aos-delay', index * 100);
-            });
+                document.querySelectorAll('#lesson-list .list-group-item').forEach(function(item, index) {
+                    item.setAttribute('data-aos-delay', index * 100);
+                });
+            }
         }
 
-        AOS.init();
+        // Инициализация CKEditor 5 для формы
+        if (typeof ClassicEditor === 'undefined') {
+            console.error('ClassicEditor is not defined. Ensure CKEditor 5 is included in base.html.');
+        } else {
+            // Кастомный адаптер загрузки
+            class MyUploadAdapter {
+                constructor(loader) {
+                    this.loader = loader;
+                }
+
+                upload() {
+                    return this.loader.file.then(file => new Promise((resolve, reject) => {
+                        const data = new FormData();
+                        data.append('upload', file);
+
+                        fetch('{% url "courses:upload_image" %}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: data
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.url) {
+                                resolve({ default: data.url });
+                            } else {
+                                reject(data.error || 'Не удалось загрузить изображение.');
+                            }
+                        })
+                        .catch(error => {
+                            reject('Ошибка загрузки изображения: ' + error.message);
+                        });
+                    }));
+                }
+
+                abort() {
+                    // Отмена загрузки, если нужно
+                }
+            }
+
+            function MyCustomUploadAdapterPlugin(editor) {
+                editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+                    return new MyUploadAdapter(loader);
+                };
+            }
+
+            // Инициализация CKEditor для description
+            const descriptionField = document.querySelector('#id_description');
+            if (descriptionField) {
+                ClassicEditor
+                    .create(descriptionField, {
+                        extraPlugins: [MyCustomUploadAdapterPlugin],
+                        toolbar: [
+                            'heading', '|',
+                            'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
+                            'blockQuote', 'insertTable', 'mediaEmbed', 'imageUpload', 'undo', 'redo'
+                        ],
+                        height: 300
+                    })
+                    .then(editor => {
+                        console.log('Description editor initialized', editor);
+                    })
+                    .catch(error => {
+                        console.error('Error initializing description editor:', error);
+                    });
+            } else {
+                console.warn('Description field (#id_description) not found in the form.');
+            }
+
+            // Инициализация CKEditor для content
+            const contentField = document.querySelector('#id_content');
+            if (contentField) {
+                ClassicEditor
+                    .create(contentField, {
+                        extraPlugins: [MyCustomUploadAdapterPlugin],
+                        toolbar: [
+                            'heading', '|',
+                            'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
+                            'blockQuote', 'insertTable', 'mediaEmbed', 'imageUpload', 'undo', 'redo'
+                        ],
+                        height: 400
+                    })
+                    .then(editor => {
+                        console.log('Content editor initialized', editor);
+                    })
+                    .catch(error => {
+                        console.error('Error initializing content editor:', error);
+                    });
+            } else {
+                console.warn('Content field (#id_content) not found in the form.');
+            }
+        }
+
+        // Инициализация AOS
+        if (typeof AOS === 'undefined') {
+            console.error('AOS is not defined. Ensure AOS.js is included in base.html.');
+        } else {
+            AOS.init();
+        }
     });
 
     function saveOrder() {

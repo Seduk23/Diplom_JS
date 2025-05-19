@@ -17,7 +17,7 @@
             <p><strong>{% trans "Description" %}:</strong> {{ lesson.description|safe }}</p>
             {% endif %}
             {% if lesson.content %}
-            <p><strong>{% trans "Материал" %}:</strong> {{ lesson.content|linebreaks }}</p>
+            <p><strong>{% trans "Материал" %}:</strong> {{ lesson.content|safe }}</p>
             {% endif %}
             {% if lesson.video_url %}
             <p><strong>{% trans "Видео" %}:</strong> <a href="{{ lesson.video_url }}" target="_blank">{{ lesson.video_url }}</a></p>
