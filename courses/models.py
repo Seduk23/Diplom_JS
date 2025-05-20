@@ -36,14 +36,13 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.title
-    
+
 class Test(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     passing_score = models.PositiveIntegerField()
     is_active = models.BooleanField(default=True)
-    # Другие поля
 
     class Meta:
         verbose_name = _("Тест")
@@ -51,6 +50,7 @@ class Test(models.Model):
 
     def __str__(self):
         return self.title
+
     def calculate_score(self, selected_answers):
         total_points = sum(q.points for q in self.questions.all())
         score = 0
@@ -75,6 +75,7 @@ class Test(models.Model):
                     score += question.points
 
         return (score / total_points * 100) if total_points else 0
+
 class Question(models.Model):
     QUESTION_TYPES = (
         ('single', _("Single Choice")),
@@ -107,9 +108,11 @@ class Answer(models.Model):
     def __str__(self):
         return self.text
 
+
 class TestResult(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='test_results', verbose_name=_("Студент"))
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='test_results', verbose_name=_("Урок"))
+    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='results', null=True, blank=True, verbose_name=_("Тест"))  # Добавляем поле
     score = models.FloatField(verbose_name=_("Результат"))
     answers = models.JSONField(verbose_name=_("Ответы"))
     attempts = models.PositiveIntegerField(default=1, verbose_name=_("Попытки"))
@@ -118,10 +121,10 @@ class TestResult(models.Model):
     class Meta:
         verbose_name = _("Результаты теста")
         verbose_name_plural = _("Результаты тестов")
+        unique_together = ('student', 'lesson', 'test')  # Обновляем unique_together
 
     def __str__(self):
-        return f"{self.student.username} - {self.lesson.title}"
-
+        return f"{self.student.username} - {self.lesson.title} - {self.test.title if self.test else 'No Test'}"
 class Enrollment(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='enrollments', verbose_name=_("Студент"))
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments', verbose_name=_("Курс"))
@@ -135,7 +138,7 @@ class Enrollment(models.Model):
     def __str__(self):
         return f"{self.student.username} - {self.course.title}"
 
-class Progress(models.Model):
+class StudentProgress(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='progress', verbose_name=_("Студент"))
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='progress', verbose_name=_("Урок"))
     completed = models.BooleanField(default=False, verbose_name=_("Выполнено"))
@@ -148,3 +151,28 @@ class Progress(models.Model):
 
     def __str__(self):
         return f"{self.student.username} - {self.lesson.title}"
+
+class Achievement(models.Model):
+    name = models.CharField(max_length=100, verbose_name=_("Название"))
+    description = models.TextField(verbose_name=_("Описание"))
+    badge_image = models.ImageField(upload_to='badges/', null=True, blank=True, verbose_name=_("Значок"))
+
+    class Meta:
+        verbose_name = _("Достижение")
+        verbose_name_plural = _("Достижения")
+
+    def __str__(self):
+        return self.name
+
+class UserAchievement(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='achievements')
+    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
+    awarded_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Дата награды"))
+
+    class Meta:
+        verbose_name = _("Награда пользователя")
+        verbose_name_plural = _("Награды пользователей")
+        unique_together = ('user', 'achievement')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.achievement.name}"

@@ -34,18 +34,30 @@
                 {% for test in item.tests %}
                 <li>
                     {{ test.title }} (Вопросы: {{ test.questions.count }}, Опубликован: {{ test.is_active|yesno:"ДА,НЕТ" }})
-                    <a href="{% url 'courses:manage_test_questions' test_id=test.id %}" class="btn btn-sm btn-outline-primary">{% trans "Управление вопросами" %}</a>
-                    <a href="{% url 'courses:manage_test_results' test_id=test.id %}" class="btn btn-sm btn-outline-danger">{% trans "Управление результатами" %}</a>
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'courses:manage_test_questions' test_id=test.id %}" class="btn btn-sm btn-outline-primary">{% trans "Управление вопросами" %}</a>
+                        <a href="{% url 'courses:manage_test_results' test_id=test.id %}" class="btn btn-sm btn-outline-danger">{% trans "Управление результатами" %}</a>
+                        <form method="post" action="{% url 'courses:delete_test' test_id=test.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" data-confirm="{% trans 'Вы уверены, что хотите удалить тест' %} {{ test.title }}?">{% trans "Удалить тест" %}</button>
+                        </form>
+                    </div>
                 </li>
                 {% endfor %}
             </ul>
             {% else %}
             <p>{% trans "Для этого урока нет тестов." %}</p>
             {% endif %}
-            <a href="{% url 'courses:lesson_edit' pk=item.lesson.id %}" class="btn btn-sm btn-warning">{% trans "Редактировать" %}</a>
-            <a href="{% url 'courses:lesson_detail' lesson_id=item.lesson.id %}" class="btn btn-sm btn-info">{% trans "Просмотр" %}</a>
-            <a href="{% url 'courses:lesson_preview' lesson_id=item.lesson.id %}" class="btn btn-sm btn-outline-info">{% trans "Обложка" %}</a>
-            <a href="{% url 'courses:create_test' lesson_id=item.lesson.id %}" class="btn btn-sm btn-secondary">{% trans "Добавить тест" %}</a>
+            <div class="btn-group" role="group">
+                <a href="{% url 'courses:lesson_edit' pk=item.lesson.id %}" class="btn btn-sm btn-warning">{% trans "Редактировать" %}</a>
+                <a href="{% url 'courses:lesson_detail' lesson_id=item.lesson.id %}" class="btn btn-sm btn-info">{% trans "Просмотр" %}</a>
+                <a href="{% url 'courses:lesson_preview' lesson_id=item.lesson.id %}" class="btn btn-sm btn-outline-info">{% trans "Обложка" %}</a>
+                <a href="{% url 'courses:create_test' lesson_id=item.lesson.id %}" class="btn btn-sm btn-secondary">{% trans "Добавить тест" %}</a>
+                <form method="post" action="{% url 'courses:delete_lesson' lesson_id=item.lesson.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger" data-confirm="{% trans 'Вы уверены, что хотите удалить урок' %} {{ item.lesson.title }}?">{% trans "Удалить урок" %}</button>
+                </form>
+            </div>
         </div>
         {% endfor %}
     </div>
@@ -83,7 +95,6 @@
         if (typeof ClassicEditor === 'undefined') {
             console.error('ClassicEditor is not defined. Ensure CKEditor 5 is included in base.html.');
         } else {
-            // Кастомный адаптер загрузки
             class MyUploadAdapter {
                 constructor(loader) {
                     this.loader = loader;
@@ -93,7 +104,6 @@
                     return this.loader.file.then(file => new Promise((resolve, reject) => {
                         const data = new FormData();
                         data.append('upload', file);
-
                         fetch('{% url "courses:upload_image" %}', {
                             method: 'POST',
                             headers: {
@@ -121,53 +131,31 @@
             }
 
             function MyCustomUploadAdapterPlugin(editor) {
-                editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
-                    return new MyUploadAdapter(loader);
-                };
+                editor.plugins.get('FileRepository').createUploadAdapter = (loader) => new MyUploadAdapter(loader);
             }
 
-            // Инициализация CKEditor для description
             const descriptionField = document.querySelector('#id_description');
             if (descriptionField) {
-                ClassicEditor
-                    .create(descriptionField, {
-                        extraPlugins: [MyCustomUploadAdapterPlugin],
-                        toolbar: [
-                            'heading', '|',
-                            'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
-                            'blockQuote', 'insertTable', 'mediaEmbed', 'imageUpload', 'undo', 'redo'
-                        ],
-                        height: 300
-                    })
-                    .then(editor => {
-                        console.log('Description editor initialized', editor);
-                    })
-                    .catch(error => {
-                        console.error('Error initializing description editor:', error);
-                    });
+                ClassicEditor.create(descriptionField, {
+                    extraPlugins: [MyCustomUploadAdapterPlugin],
+                    toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'blockQuote', 'insertTable', 'mediaEmbed', 'imageUpload', 'undo', 'redo'],
+                    height: 300
+                })
+                .then(editor => console.log('Description editor initialized', editor))
+                .catch(error => console.error('Error initializing description editor:', error));
             } else {
                 console.warn('Description field (#id_description) not found in the form.');
             }
 
-            // Инициализация CKEditor для content
             const contentField = document.querySelector('#id_content');
             if (contentField) {
-                ClassicEditor
-                    .create(contentField, {
-                        extraPlugins: [MyCustomUploadAdapterPlugin],
-                        toolbar: [
-                            'heading', '|',
-                            'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
-                            'blockQuote', 'insertTable', 'mediaEmbed', 'imageUpload', 'undo', 'redo'
-                        ],
-                        height: 400
-                    })
-                    .then(editor => {
-                        console.log('Content editor initialized', editor);
-                    })
-                    .catch(error => {
-                        console.error('Error initializing content editor:', error);
-                    });
+                ClassicEditor.create(contentField, {
+                    extraPlugins: [MyCustomUploadAdapterPlugin],
+                    toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'blockQuote', 'insertTable', 'mediaEmbed', 'imageUpload', 'undo', 'redo'],
+                    height: 400
+                })
+                .then(editor => console.log('Content editor initialized', editor))
+                .catch(error => console.error('Error initializing content editor:', error));
             } else {
                 console.warn('Content field (#id_content) not found in the form.');
             }
@@ -179,11 +167,20 @@
         } else {
             AOS.init();
         }
+
+        // Обработчик подтверждения удаления
+        document.querySelectorAll('button[data-confirm]').forEach(button => {
+            button.addEventListener('click', function(event) {
+                if (!confirm(button.getAttribute('data-confirm'))) {
+                    event.preventDefault();
+                }
+            });
+        });
     });
 
     function saveOrder() {
-        var order = [];
-        document.querySelectorAll('#lesson-list .list-group-item').forEach(function(item) {
+        const order = [];
+        document.querySelectorAll('#lesson-list .list-group-item').forEach(item => {
             order.push(item.getAttribute('data-id'));
         });
         fetch("{% url 'courses:reorder_lessons' course.id %}", {
@@ -196,11 +193,7 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (data.status === 'success') {
-                alert('{% trans "Lesson order saved!" %}');
-            } else {
-                alert('{% trans "Error saving order." %}');
-            }
+            alert(data.status === 'success' ? '{% trans "Lesson order saved!" %}' : '{% trans "Error saving order." %}');
         })
         .catch(error => {
             console.error('Error:', error);

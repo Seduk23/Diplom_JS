@@ -1,0 +1,28 @@
+<!-- templates/courses/student_progress.html -->
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Мой прогресс" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5" data-aos="fade-up">
+    <h1>{% trans "Мой прогресс" %}</h1>
+    {% include 'partials/messages.html' %}
+    {% if progress %}
+    <ul class="list-group">
+        {% for item in progress %}
+        <li class="list-group-item">
+            {{ item.lesson.title }} - 
+            {% if item.completed %}
+                {% trans "Завершено" %} ({{ item.completed_at }})
+            {% else %}
+                {% trans "Не завершено" %}
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>{% trans "Прогресс отсутствует." %}</p>
+    {% endif %}
+</div>
+{% endblock %}

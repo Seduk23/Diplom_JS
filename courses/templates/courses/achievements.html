@@ -1,0 +1,32 @@
+<!-- templates/courses/achievements.html -->
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Мои достижения" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5" data-aos="fade-up">
+    <h1>{% trans "Мои достижения" %}</h1>
+    {% include 'partials/messages.html' %}
+    {% if user_achievements %}
+    <div class="row">
+        {% for ua in user_achievements %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ ua.achievement.name }}</h5>
+                    <p class="card-text">{{ ua.achievement.description }}</p>
+                    {% if ua.achievement.badge_image %}
+                    <img src="{{ ua.achievement.badge_image.url }}" alt="{{ ua.achievement.name }}" class="img-fluid" style="max-width: 100px;">
+                    {% endif %}
+                    <p class="text-muted">{% trans "Получено" %}: {{ ua.awarded_at }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>{% trans "Достижения отсутствуют." %}</p>
+    {% endif %}
+</div>
+{% endblock %}
