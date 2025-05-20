@@ -9,7 +9,10 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+    <!-- Добавляем Chart.js для графиков -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark" data-aos="fade-down">
@@ -40,8 +43,9 @@
                                 <a class="nav-link" href="{% url 'courses:teacher_dashboard' %}">{% trans "Мои курсы" %}</a>
                             </li>
                         {% elif user.is_student %}
+                            <!-- Оставляем только "Личный кабинет" -->
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'courses:student_dashboard' %}">{% trans "Мои курсы" %}</a>
+                                <a class="nav-link" href="{% url 'courses:student_dashboard' %}">{% trans "Личный кабинет" %}</a>
                             </li>
                         {% endif %}
                         <li class="nav-item d-flex align-items-center">
@@ -81,6 +85,11 @@
                             {% endfor %}
                         </ul>
                     </li>
+                    <li class="nav-item">
+                        <button id="theme-toggle" class="btn btn-outline-secondary nav-link">
+                            <i class="bi bi-moon"></i>
+                        </button>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -95,6 +104,53 @@
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
         AOS.init();
+    </script>
+    <script>
+        // Отладка: проверяем загрузку
+        console.log("Theme toggle script loaded at:", new Date().toISOString());
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM fully loaded and parsed");
+
+            const themeToggle = document.getElementById('theme-toggle');
+            if (!themeToggle) {
+                console.error("Theme toggle button not found! Check if <button id='theme-toggle'> exists in HTML.");
+                return;
+            }
+            console.log("Theme toggle button found!");
+
+            const themeIcon = themeToggle.querySelector('i');
+            if (!themeIcon) {
+                console.error("Theme icon not found inside theme toggle button!");
+                return;
+            }
+            console.log("Theme icon found!");
+
+            themeToggle.addEventListener('click', function() {
+                console.log("Theme toggle clicked!");
+                document.body.classList.toggle('dark-theme');
+                const isDark = document.body.classList.contains('dark-theme');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                console.log("Toggled theme to:", isDark ? "dark" : "light");
+                themeIcon.classList.toggle('bi-moon', !isDark);
+                themeIcon.classList.toggle('bi-sun', isDark);
+                console.log("Icon classes:", themeIcon.className);
+                console.log("Body classes:", document.body.className);
+            });
+            console.log("Click handler attached to theme toggle button");
+
+            // При загрузке страницы
+            console.log("Checking stored theme...");
+            if (localStorage.getItem('theme') === 'dark') {
+                console.log("Applying dark theme from localStorage");
+                document.body.classList.add('dark-theme');
+                themeIcon.classList.remove('bi-moon');
+                themeIcon.classList.add('bi-sun');
+                console.log("Body classes:", document.body.className);
+            } else {
+                console.log("Applying light theme (default)");
+            }
+        });
     </script>
     {% block extra_js %}
     {% endblock %}

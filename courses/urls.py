@@ -10,7 +10,7 @@ app_name = 'courses'
 urlpatterns = [
     path('', views.home, name='home'),
     path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login'),
-    path('student/dashboard/', views.student_dashboard, name='student_dashboard'),
+    path('dashboard/student/', views.student_dashboard, name='student_dashboard'),
     path('teacher/dashboard/', views.teacher_dashboard, name='teacher_dashboard'),
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('signup/student/', views.StudentSignUpView.as_view(), name='student_signup'),
@@ -40,4 +40,7 @@ urlpatterns = [
     path('lesson/<int:lesson_id>/test/result/', views.test_result, name='test_result'),
     path('test/<int:test_id>/results/', views.manage_test_results, name='manage_test_results'),
     path('lesson/<int:lesson_id>/test/results/', views.test_result, name='test_results'),
+    path('lesson/<int:lesson_id>/complete/', views.complete_lesson, name='complete_lesson'),
+    path('lesson/<int:lesson_id>/delete/', views.delete_lesson, name='delete_lesson'),
+    path('test/<int:test_id>/delete/', views.delete_test, name='delete_test'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

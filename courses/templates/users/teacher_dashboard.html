@@ -15,10 +15,15 @@
                 <div class="list-group-item" data-aos="fade-up">
                     <h5>{{ course.title }}</h5>
                     <p>{{ course.description|truncatewords:20 }}</p>
-                    <a href="{% url 'courses:course_edit' pk=course.id %}" class="btn btn-sm btn-warning">{% trans "Редактировать курс" %}</a>
-                    <a href="{% url 'courses:manage_lessons' course_id=course.id %}" class="btn btn-sm btn-primary">{% trans "Управление уроками" %}</a>
-                    <a href="{% url 'courses:course_detail' course_id=course.id %}" class="btn btn-sm btn-info">{% trans "Просмотр курса" %}</a>
-                    <a href="{% url 'courses:delete_course' course_id=course.id %}" class="btn btn-sm btn-danger">{% trans "Удалить курс" %}</a>
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'courses:course_edit' pk=course.id %}" class="btn btn-sm btn-warning">{% trans "Редактировать курс" %}</a>
+                        <a href="{% url 'courses:manage_lessons' course_id=course.id %}" class="btn btn-sm btn-primary">{% trans "Управление уроками" %}</a>
+                        <a href="{% url 'courses:course_detail' course_id=course.id %}" class="btn btn-sm btn-info">{% trans "Просмотр курса" %}</a>
+                        <form method="post" action="{% url 'courses:delete_course' course_id=course.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" data-confirm="{% trans 'Вы уверены, что хотите удалить курс' %} {{ course.title }}?">{% trans "Удалить курс" %}</button>
+                        </form>
+                    </div>
                 </div>
             {% endfor %}
         </div>
@@ -62,4 +67,24 @@
         </div>
     {% endif %}
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация AOS
+        if (typeof AOS === 'undefined') {
+            console.error('AOS is not defined. Ensure AOS.js is included in base.html.');
+        } else {
+            AOS.init();
+        }
+
+        // Обработчик подтверждения удаления
+        document.querySelectorAll('button[data-confirm]').forEach(button => {
+            button.addEventListener('click', function(event) {
+                if (!confirm(button.getAttribute('data-confirm'))) {
+                    event.preventDefault();
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

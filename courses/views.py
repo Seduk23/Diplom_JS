@@ -13,8 +13,8 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.core.files.storage import default_storage
-from django.db.models import Avg, Max, Min
-from .models import Course, Lesson, Test, Question, Answer, TestResult, Enrollment, Progress
+from django.db.models import Avg, Max, Min, Sum
+from .models import Course, Lesson, Test, Question, Answer, TestResult, Enrollment, StudentProgress, Achievement, UserAchievement
 from .forms import (
     CourseForm, LessonForm, TestForm, QuestionForm, AnswerForm,
     StudentSignUpForm, TeacherSignUpForm, TestSubmissionForm
@@ -37,7 +37,7 @@ def check_lesson_access(request, lesson):
         lesson_index = list(lessons).index(lesson)
         if lesson_index > 0:
             prev_lesson = lessons[lesson_index - 1]
-            prev_progress = Progress.objects.filter(student=user, lesson=prev_lesson, completed=True).exists()
+            prev_progress = StudentProgress.objects.filter(student=user, lesson=prev_lesson, completed=True).exists()
             if not prev_progress:
                 test = Test.objects.filter(lesson=prev_lesson).first()
                 if test:
@@ -83,11 +83,15 @@ class TeacherSignUpView(CreateView):
         return super().form_valid(form)
 
 @login_required
+@student_required
 def student_dashboard(request):
+    # Получаем подписки студента
     enrollments = Enrollment.objects.filter(student=request.user).select_related('course')
+    
+    # Прогресс по курсам
     progress = {
         enrollment.course.id: {
-            'completed': Progress.objects.filter(
+            'completed': StudentProgress.objects.filter(
                 student=request.user,
                 lesson__course=enrollment.course,
                 completed=True
@@ -99,6 +103,7 @@ def student_dashboard(request):
     for data in progress.values():
         data['percent'] = int((data['completed'] / data['total']) * 100) if data['total'] else 0
 
+    # Результаты тестов
     test_results = {
         enrollment.course.id: TestResult.objects.filter(
             student=request.user,
@@ -107,10 +112,36 @@ def student_dashboard(request):
         for enrollment in enrollments
     }
 
+    # Общий прогресс студента (все уроки)
+    student_progress = StudentProgress.objects.filter(student=request.user).select_related('lesson')
+
+    # Достижения
+    user_achievements = UserAchievement.objects.filter(user=request.user).select_related('achievement')
+
+    # Аналитика
+    # Средний балл за тесты
+    test_stats = TestResult.objects.filter(student=request.user).aggregate(
+        avg_score=Avg('score'),
+        total_tests=Sum('attempts')
+    )
+    average_score = round(test_stats['avg_score'], 2) if test_stats['avg_score'] else 0
+    total_attempts = test_stats['total_tests'] or 0
+
+    # Данные для графика прогресса
+    chart_data = {
+        'labels': [enrollment.course.title for enrollment in enrollments],
+        'data': [progress[enrollment.course.id]['percent'] for enrollment in enrollments]
+    }
+
     return render(request, 'users/student_dashboard.html', {
         'enrollments': enrollments,
         'progress': progress,
-        'test_results': test_results
+        'test_results': test_results,
+        'student_progress': student_progress,
+        'user_achievements': user_achievements,
+        'average_score': average_score,
+        'total_attempts': total_attempts,
+        'chart_data': chart_data
     })
 
 @login_required
@@ -209,15 +240,14 @@ def manage_lessons(request, course_id):
 def upload_image(request):
     if request.method == 'POST' and request.FILES.get('upload'):
         file = request.FILES['upload']
-        # Сохранение файла в папку media/uploads/
         file_path = os.path.join('uploads', file.name)
         file_path = default_storage.save(file_path, file)
-        # Формируем полный URL для изображения
         file_url = settings.MEDIA_URL + file_path
         return JsonResponse({'url': file_url})
     return JsonResponse({'error': 'Неверный запрос'}, status=400)
 
 @login_required
+@teacher_required
 def delete_course(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     if request.user != course.creator and not request.user.is_superuser:
@@ -229,7 +259,7 @@ def delete_course(request, course_id):
             Test.objects.filter(lesson__course=course).delete()
             Lesson.objects.filter(course=course).delete()
             Enrollment.objects.filter(course=course).delete()
-            Progress.objects.filter(lesson__course=course).delete()
+            StudentProgress.objects.filter(lesson__course=course).delete()
             TestResult.objects.filter(lesson__course=course).delete()
             course.delete()
             messages.success(request, f"Курс '{course.title}' успешно удалён.")
@@ -237,7 +267,49 @@ def delete_course(request, course_id):
             messages.error(request, f"Ошибка при удалении курса: {str(e)}")
         return redirect('courses:teacher_dashboard')
     
+    # Если запрос не POST, перенаправляем обратно (форма подтверждения теперь в шаблоне)
     return redirect('courses:teacher_dashboard')
+
+@login_required
+@teacher_required
+def delete_lesson(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+    course = lesson.course
+    if request.user != course.creator and not request.user.is_superuser:
+        messages.error(request, "У вас нет прав для удаления этого урока.")
+        return redirect('courses:manage_lessons', course_id=course.id)
+
+    if request.method == 'POST':
+        try:
+            # Удаляем связанные тесты и их результаты
+            Test.objects.filter(lesson=lesson).delete()
+            lesson.delete()
+            messages.success(request, f"Урок '{lesson.title}' успешно удалён.")
+        except Exception as e:
+            messages.error(request, f"Ошибка при удалении урока: {str(e)}")
+        return redirect('courses:manage_lessons', course_id=course.id)
+    return redirect('courses:manage_lessons', course_id=course.id)
+
+@login_required
+@teacher_required
+def delete_test(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    lesson = test.lesson
+    course = lesson.course
+    if request.user != course.creator and not request.user.is_superuser:
+        messages.error(request, "У вас нет прав для удаления этого теста.")
+        return redirect('courses:manage_lessons', course_id=course.id)
+
+    if request.method == 'POST':
+        try:
+            # Удаляем все результаты теста
+            TestResult.objects.filter(lesson=lesson, test_id=test_id).delete()
+            test.delete()
+            messages.success(request, f"Тест '{test.title}' успешно удалён.")
+        except Exception as e:
+            messages.error(request, f"Ошибка при удалении теста: {str(e)}")
+        return redirect('courses:manage_lessons', course_id=course.id)
+    return redirect('courses:manage_lessons', course_id=course.id)
 
 @login_required
 @teacher_required
@@ -534,7 +606,7 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
                     )
                     test_data['form'] = None
 
-            progress = Progress.objects.filter(
+            progress = StudentProgress.objects.filter(
                 student=self.request.user, lesson=lesson, completed=True
             ).exists()
             context["can_access_next_lesson"] = progress
@@ -549,10 +621,10 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
             "test_titles": [test.title for test in tests],
             "has_questions": [test.questions.exists() for test in tests],
             "question_count": [test.questions.count() for test in tests],
-            "progress_completed": Progress.objects.filter(
+            "progress_completed": StudentProgress.objects.filter(
                 student=self.request.user, lesson=lesson, completed=True
             ).exists(),
-            "progress_count": Progress.objects.filter(
+            "progress_count": StudentProgress.objects.filter(
                 student=self.request.user, lesson=lesson
             ).count(),
             "form_errors": None,
@@ -599,12 +671,20 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
                     attempts=attempt_number,
                 )
                 if score >= test.passing_score:
-                    Progress.objects.update_or_create(
+                    StudentProgress.objects.update_or_create(
                         student=request.user,
                         lesson=lesson,
                         defaults={'completed': True, 'completed_at': timezone.now()}
                     )
-                    messages.success(request, _("Test passed! You can now proceed to the next lesson."))
+                    # Проверка и награждение достижениями
+                    completed_lessons = StudentProgress.objects.filter(student=request.user, completed=True).count()
+                    if completed_lessons == 1:
+                        achievement, _ = Achievement.objects.get_or_create(
+                            name="Первый завершённый урок",
+                            defaults={'description': "Завершил свой первый урок!", 'badge_image': None}
+                        )
+                        UserAchievement.objects.get_or_create(user=request.user, achievement=achievement)
+                        messages.success(request, _("Поздравляем! Вы получили достижение 'Первый завершённый урок'!"))
                 else:
                     messages.warning(request, _("Test submitted, but you did not pass. Try again."))
                 return redirect("courses:test_result", lesson_id=lesson.id)
@@ -673,6 +753,32 @@ def test_result(request, lesson_id):
         }
     })
 
+@login_required
+@student_required
+def complete_lesson(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+    check_lesson_access(request, lesson)
+    progress, created = StudentProgress.objects.get_or_create(
+        student=request.user, lesson=lesson,
+        defaults={'completed': True, 'completed_at': timezone.now()}
+    )
+    if not created:
+        progress.completed = True
+        progress.completed_at = timezone.now()
+        progress.save()
+    
+    # Проверка и награждение достижениями
+    completed_lessons = StudentProgress.objects.filter(student=request.user, completed=True).count()
+    if completed_lessons == 1:
+        achievement, _ = Achievement.objects.get_or_create(
+            name="Первый завершённый урок",
+            defaults={'description': "Завершил свой первый урок!", 'badge_image': None}
+        )
+        UserAchievement.objects.get_or_create(user=request.user, achievement=achievement)
+        messages.success(request, _("Поздравляем! Вы получили достижение 'Первый завершённый урок'!"))
+    
+    return redirect('courses:lesson_detail', lesson_id=lesson.id)
+
 def process_test_answers(test, request):
     answers = {}
     score = 0
@@ -709,7 +815,7 @@ def update_test_result(result, score, total_points, messages, test, lesson, requ
             attempts=1
         )
     if result.score >= test.passing_score:
-        Progress.objects.update_or_create(
+        StudentProgress.objects.update_or_create(
             student=request.user,
             lesson=lesson,
             defaults={'completed': True, 'completed_at': timezone.now()}

@@ -1,6 +1,7 @@
 /* Общие стили */
 body {
     font-family: 'Poppins', sans-serif;
+    transition: background-color 0.3s, color 0.3s; /* Плавный переход для темы */
 }
 
 /* Навигация */
@@ -22,17 +23,28 @@ footer {
     width: 100%;
 }
 
+body.dark-theme footer {
+    background-color: #222; /* Более тёмный футер в тёмной теме */
+}
+
 /* Карусель */
 .carousel-control-prev,
 .carousel-control-next {
     z-index: 1;
     width: 5%;
-    opacity: 0.7;
+    opacity: 1; /* Всегда видимые стрелки */
+    background: rgba(0, 0, 0, 0.3); /* Полупрозрачный фон */
+    transition: background 0.3s;
 }
 
 .carousel-control-prev:hover,
 .carousel-control-next:hover {
-    opacity: 1;
+    background: rgba(0, 0, 0, 0.5); /* Более тёмный фон при наведении */
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(1); /* Белые стрелки для контраста */
 }
 
 .carousel-inner {
@@ -73,4 +85,94 @@ footer {
 /* Контейнер */
 .container {
     padding-bottom: 2rem;
+}
+
+/* Тёмная тема с повышенной специфичностью */
+html body.dark-theme {
+    background-color: #333 !important;
+    color: #fff !important;
+}
+
+html body.dark-theme .card,
+html body.dark-theme .list-group-item {
+    background-color: #444 !important;
+    color: #fff !important;
+    border-color: #555 !important;
+}
+
+html body.dark-theme .navbar-dark {
+    background-color: #222 !important;
+}
+
+html body.dark-theme .navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html body.dark-theme .navbar-dark .navbar-nav .nav-link:hover {
+    color: #fff !important;
+}
+
+html body.dark-theme .btn-primary {
+    background-color: #666 !important;
+    border-color: #666 !important;
+}
+
+html body.dark-theme .btn-primary:hover {
+    background-color: #777 !important;
+    border-color: #777 !important;
+}
+
+html body.dark-theme .btn-outline-secondary {
+    color: #fff !important;
+    border-color: #666 !important;
+}
+
+html body.dark-theme .btn-outline-secondary:hover {
+    background-color: #555 !important;
+    color: #fff !important;
+}
+
+html body.dark-theme .form-control {
+    background-color: #444 !important;
+    color: #fff !important;
+    border-color: #555 !important;
+}
+
+html body.dark-theme .form-control:focus {
+    background-color: #555 !important;
+    color: #fff !important;
+    border-color: #666 !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1) !important;
+}
+
+html body.dark-theme .alert {
+    background-color: #555 !important;
+    color: #fff !important;
+    border-color: #666 !important;
+}
+
+html body.dark-theme .text-warning {
+    color: #ffca2c !important;
+}
+
+html body.dark-theme .text-danger {
+    color: #ff6b6b !important;
+}
+
+/* Стили для иконок переключения темы */
+#theme-toggle i {
+    font-size: 1.2rem;
+}
+
+html body.dark-theme #theme-toggle i {
+    color: #fff !important;
+}
+
+/* Анимация для кнопок */
+.btn {
+    transition: transform 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: scale(1.05);
 }
