@@ -1,0 +1,414 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Словарь терминов" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 data-aos="fade-up" class="mb-4">{% trans "Словарь терминов JavaScript" %}</h1>
+
+    <!-- Поле для поиска -->
+    <div class="mb-4" data-aos="fade-up">
+        <input type="text" id="searchInput" class="form-control" placeholder="{% trans 'Поиск термина...' %}">
+    </div>
+
+    <!-- Сообщение "Ничего не найдено" -->
+    <div id="noResults" class="text-center text-muted mt-3" style="display: none;">
+        {% trans "Ничего не найдено" %}
+    </div>
+
+    <div class="row" id="termsList">
+        <!-- Термин 1: let -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="0">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">let</h5>
+                    <p class="card-text"><strong>English:</strong> Declares a block-scoped variable.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Объявляет переменную с блочной областью видимости.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Déclare une variable à portée de bloc.</p>
+                    <pre><code class="language-javascript">let x = 10;
+if (true) {
+    let x = 20;
+    console.log(x); // 20
+}
+console.log(x); // 10</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 2: const -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">const</h5>
+                    <p class="card-text"><strong>English:</strong> Declares a block-scoped constant that cannot be reassigned.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Объявляет константу с блочной областью видимости, которую нельзя переприсвоить.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Déclare une constante à portée de bloc qui ne peut pas être réassignée.</p>
+                    <pre><code class="language-javascript">const PI = 3.14;
+// PI = 3.14159; // Error
+console.log(PI);</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 3: var -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">var</h5>
+                    <p class="card-text"><strong>English:</strong> Declares a variable with function scope or global scope.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Объявляет переменную с функциональной или глобальной областью видимости.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Déclare une variable avec une portée de fonction ou globale.</p>
+                    <pre><code class="language-javascript">var x = 10;
+if (true) {
+    var x = 20;
+}
+console.log(x); // 20</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 4: function -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="0">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">function</h5>
+                    <p class="card-text"><strong>English:</strong> Declares a function.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Объявляет функцию.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Déclare une fonction.</p>
+                    <pre><code class="language-javascript">function greet() {
+    console.log("Hello!");
+}
+greet();</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 5: if -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">if</h5>
+                    <p class="card-text"><strong>English:</strong> Executes a block of code if a condition is true.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Выполняет блок кода, если условие истинно.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Exécute un bloc de code si une condition est vraie.</p>
+                    <pre><code class="language-javascript">if (x > 0) {
+    console.log("Positive");
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 6: else -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">else</h5>
+                    <p class="card-text"><strong>English:</strong> Executes a block of code if the if condition is false.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Выполняет блок кода, если условие if ложно.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Exécute un bloc de code si la condition if est fausse.</p>
+                    <pre><code class="language-javascript">if (x > 0) {
+    console.log("Positive");
+} else {
+    console.log("Negative");
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 7: for -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="0">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">for</h5>
+                    <p class="card-text"><strong>English:</strong> Creates a loop that executes a block of code multiple times.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Создаёт цикл, который выполняет блок кода несколько раз.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Crée une boucle qui exécute un bloc de code plusieurs fois.</p>
+                    <pre><code class="language-javascript">for (let i = 0; i < 5; i++) {
+    console.log(i);
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 8: while -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">while</h5>
+                    <p class="card-text"><strong>English:</strong> Creates a loop that executes while a condition is true.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Создаёт цикл, который выполняется, пока условие истинно.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Crée une boucle qui s’exécute tant qu’une condition est vraie.</p>
+                    <pre><code class="language-javascript">let i = 0;
+while (i < 5) {
+    console.log(i);
+    i++;
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 9: array -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">array</h5>
+                    <p class="card-text"><strong>English:</strong> A collection of elements stored in a single variable.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Коллекция элементов, хранящихся в одной переменной.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Une collection d’éléments stockés dans une seule variable.</p>
+                    <pre><code class="language-javascript">const arr = [1, 2, 3];
+console.log(arr[0]); // 1</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 10: object -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="0">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">object</h5>
+                    <p class="card-text"><strong>English:</strong> A collection of key-value pairs.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Коллекция пар ключ-значение.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Une collection de paires clé-valeur.</p>
+                    <pre><code class="language-javascript">const obj = { name: "John", age: 30 };
+console.log(obj.name); // John</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 11: this -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">this</h5>
+                    <p class="card-text"><strong>English:</strong> Refers to the current context or object.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Указывает на текущий контекст или объект.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Fait référence au contexte ou objet actuel.</p>
+                    <pre><code class="language-javascript">function show() {
+    console.log(this);
+}
+show();</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 12: class -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">class</h5>
+                    <p class="card-text"><strong>English:</strong> A blueprint for creating objects with methods and properties.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Шаблон для создания объектов с методами и свойствами.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Un modèle pour créer des objets avec des méthodes et des propriétés.</p>
+                    <pre><code class="language-javascript">class Person {
+    constructor(name) {
+        this.name = name;
+    }
+}
+const p = new Person("John");</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 13: new -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="0">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">new</h5>
+                    <p class="card-text"><strong>English:</strong> Creates an instance of an object from a constructor.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Создаёт экземпляр объекта из конструктора.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Crée une instance d’un objet à partir d’un constructeur.</p>
+                    <pre><code class="language-javascript">const p = new Person("John");</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 14: try/catch -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">try/catch</h5>
+                    <p class="card-text"><strong>English:</strong> Handles errors in a block of code.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Обрабатывает ошибки в блоке кода.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Gère les erreurs dans un bloc de code.</p>
+                    <pre><code class="language-javascript">try {
+    throw new Error("Error!");
+} catch (e) {
+    console.log(e.message);
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 15: async/await -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">async/await</h5>
+                    <p class="card-text"><strong>English:</strong> Handles asynchronous operations with cleaner syntax.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Обрабатывает асинхронные операции с более чистым синтаксисом.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Gère les opérations asynchrones avec une syntaxe plus claire.</p>
+                    <pre><code class="language-javascript">async function fetchData() {
+    const data = await fetch("url");
+    console.log(data);
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 16: promise -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="0">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">promise</h5>
+                    <p class="card-text"><strong>English:</strong> An object representing the eventual completion of an asynchronous operation.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Объект, представляющий eventualное завершение асинхронной операции.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Un objet représentant l’achèvement éventuel d’une opération asynchrone.</p>
+                    <pre><code class="language-javascript">const promise = new Promise((resolve) => resolve("Done"));
+promise.then(console.log);</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 17: map -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">map</h5>
+                    <p class="card-text"><strong>English:</strong> Creates a new array by applying a function to each element.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Создаёт новый массив, применяя функцию к каждому элементу.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Crée un nouveau tableau en appliquant une fonction à chaque élément.</p>
+                    <pre><code class="language-javascript">const numbers = [1, 2, 3];
+const doubled = numbers.map(x => x * 2);
+console.log(doubled); // [2, 4, 6]</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 18: filter -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">filter</h5>
+                    <p class="card-text"><strong>English:</strong> Creates a new array with elements that pass a test.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Создаёт новый массив с элементами, проходящими тест.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Crée un nouveau tableau avec les éléments qui passent un test.</p>
+                    <pre><code class="language-javascript">const numbers = [1, 2, 3, 4];
+const even = numbers.filter(x => x % 2 === 0);
+console.log(even); // [2, 4]</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 19: reduce -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="0">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">reduce</h5>
+                    <p class="card-text"><strong>English:</strong> Reduces an array to a single value by applying a function.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Сводит массив к одному значению, применяя функцию.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Réduit un tableau à une seule valeur en appliquant une fonction.</p>
+                    <pre><code class="language-javascript">const numbers = [1, 2, 3, 4];
+const sum = numbers.reduce((acc, curr) => acc + curr, 0);
+console.log(sum); // 10</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Термин 20: event -->
+        <div class="col-md-4 mb-3 term-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">event</h5>
+                    <p class="card-text"><strong>English:</strong> An action or occurrence detected by the program.</p>
+                    <p class="card-text"><strong>{% trans "Русский" %}:</strong> Действие или событие, обнаруженное программой.</p>
+                    <p class="card-text"><strong>{% trans "Французский" %}:</strong> Une action ou un événement détecté par le programme.</p>
+                    <pre><code class="language-javascript">document.addEventListener("click", () => console.log("Clicked!"));</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="{% url 'courses:home' %}" class="btn btn-outline-secondary mt-3" data-aos="fade-up">{% trans "Назад на главную" %}</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Функция для нормализации текста (удаление диакритических знаков и лишних пробелов)
+function normalizeText(text) {
+    return text
+        .toLowerCase()
+        .normalize('NFD') // Разбиваем символы с диакритикой (например, "é" → "e" + диакритика)
+        .replace(/[\u0300-\u036f]/g, '') // Удаляем диакритические знаки
+        .replace(/\s+/g, ' ') // Заменяем множественные пробелы на один
+        .trim(); // Удаляем пробелы в начале и конце
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM loaded, initializing search functionality at:", new Date().toISOString());
+    const searchInput = document.getElementById('searchInput');
+    const termsList = document.getElementById('termsList');
+    const noResults = document.getElementById('noResults');
+
+    if (!searchInput || !termsList || !noResults) {
+        console.error("Required elements not found! SearchInput:", !!searchInput, "TermsList:", !!termsList, "NoResults:", !!noResults);
+        return;
+    }
+
+    console.log("All required elements found");
+
+    searchInput.addEventListener('input', function() {
+        const query = normalizeText(searchInput.value);
+        console.log("Normalized search query:", query);
+
+        const terms = termsList.getElementsByClassName('term-card');
+        console.log("Found terms:", terms.length);
+
+        let visibleTermsCount = 0;
+
+        Array.from(terms).forEach(function(term) {
+            const titleElement = term.querySelector('.card-title');
+            const definitions = term.querySelectorAll('.card-text');
+
+            if (!titleElement) {
+                console.warn("Title element not found in term:", term);
+                return;
+            }
+
+            let fullText = normalizeText(titleElement.textContent);
+
+            definitions.forEach(function(def) {
+                if (def.textContent) {
+                    fullText += ' ' + normalizeText(def.textContent);
+                }
+            });
+
+            console.log("Normalized term text:", fullText);
+
+            if (query === '' || fullText.includes(query)) {
+                term.style.display = '';
+                visibleTermsCount++;
+                console.log("Showing term:", titleElement.textContent);
+            } else {
+                term.style.display = 'none';
+                console.log("Hiding term:", titleElement.textContent);
+            }
+        });
+
+        // Показываем сообщение "Ничего не найдено", если нет видимых терминов
+        if (visibleTermsCount === 0 && query !== '') {
+            noResults.style.display = 'block';
+            console.log("No terms match the query");
+        } else {
+            noResults.style.display = 'none';
+            console.log("Visible terms:", visibleTermsCount);
+        }
+    });
+
+    // Инициализация AOS для карточек после изменения их видимости
+    searchInput.addEventListener('input', function() {
+        AOS.refresh();
+    });
+});
+</script>
+{% endblock %}

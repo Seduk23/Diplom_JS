@@ -28,6 +28,9 @@ class Lesson(models.Model):
     video_url = models.URLField(blank=True, verbose_name=_("Ссылка видео"))
     order = models.PositiveIntegerField(default=0, verbose_name=_("Выложить"))
     is_published = models.BooleanField(default=True, verbose_name=_("Опубликован"))
+    # Новые поля для интерактивного задания
+    exercise = models.TextField(blank=True, null=True, verbose_name=_("Интерактивное задание"))
+    expected_result = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Ожидаемый результат"))
 
     class Meta:
         verbose_name = _("Урок")
@@ -37,6 +40,20 @@ class Lesson(models.Model):
     def __str__(self):
         return self.title
 
+class Term(models.Model):
+    term = models.CharField(max_length=100, unique=True, verbose_name=_("Термин"))
+    definition_en = models.TextField(verbose_name=_("Определение (English)"))
+    definition_ru = models.TextField(verbose_name=_("Определение (Русский)"))
+    definition_cn = models.TextField(blank=True, null=True, verbose_name=_("Определение (中文)"))
+    example_code = models.TextField(blank=True, verbose_name=_("Пример кода"))
+
+    class Meta:
+        verbose_name = _("Термин")
+        verbose_name_plural = _("Термины")
+
+    def __str__(self):
+        return self.term
+    
 class Test(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)

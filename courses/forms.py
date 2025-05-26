@@ -19,14 +19,22 @@ class CourseForm(forms.ModelForm):
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ['title', 'description', 'content', 'video_url', 'is_published']
+        fields = ['title', 'description', 'content', 'video_url', 'order', 'is_published', 'exercise', 'expected_result']
         labels = {
             'title': _("Заголовок"),
             'description': _("Описание"),
             'content': _("Материалы"),
             'video_url': _("Ссылка на видео"),
+            'order': _("Порядок"),
             'is_published': _("Опубликован"),
+            'exercise': _("Интерактивное задание"),
+            'expected_result': _("Ожидаемый результат"),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['exercise'].widget = forms.Textarea(attrs={'rows': 4})
+        self.fields['expected_result'].widget = forms.TextInput(attrs={'placeholder': 'Например: 48'})
 
 class TestForm(forms.ModelForm):
     class Meta:

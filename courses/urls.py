@@ -43,4 +43,5 @@ urlpatterns = [
     path('lesson/<int:lesson_id>/complete/', views.complete_lesson, name='complete_lesson'),
     path('lesson/<int:lesson_id>/delete/', views.delete_lesson, name='delete_lesson'),
     path('test/<int:test_id>/delete/', views.delete_test, name='delete_test'),
+    path('glossary/', views.glossary, name='glossary'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
