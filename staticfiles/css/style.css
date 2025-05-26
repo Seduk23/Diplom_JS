@@ -87,75 +87,125 @@ body.dark-theme footer {
     padding-bottom: 2rem;
 }
 
-/* Тёмная тема с повышенной специфичностью */
-html body.dark-theme {
-    background-color: #333 !important;
-    color: #fff !important;
+/* Тёмная тема */
+body.dark-theme {
+    background-color: #333;
+    color: #fff;
 }
 
-html body.dark-theme .card,
-html body.dark-theme .list-group-item {
-    background-color: #444 !important;
-    color: #fff !important;
-    border-color: #555 !important;
+body.dark-theme .card,
+body.dark-theme .list-group-item {
+    background-color: #444;
+    color: #fff;
+    border-color: #555;
 }
 
-html body.dark-theme .navbar-dark {
-    background-color: #222 !important;
+body.dark-theme .navbar-dark {
+    background-color: #222;
 }
 
-html body.dark-theme .navbar-dark .navbar-nav .nav-link {
-    color: rgba(255, 255, 255, 0.85) !important;
+body.dark-theme .navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.85);
 }
 
-html body.dark-theme .navbar-dark .navbar-nav .nav-link:hover {
-    color: #fff !important;
+body.dark-theme .navbar-dark .navbar-nav .nav-link:hover {
+    color: #fff;
 }
 
-html body.dark-theme .btn-primary {
-    background-color: #666 !important;
-    border-color: #666 !important;
+body.dark-theme .btn-primary {
+    background-color: #666;
+    border-color: #666;
 }
 
-html body.dark-theme .btn-primary:hover {
-    background-color: #777 !important;
-    border-color: #777 !important;
+body.dark-theme .btn-primary:hover {
+    background-color: #777;
+    border-color: #777;
 }
 
-html body.dark-theme .btn-outline-secondary {
-    color: #fff !important;
-    border-color: #666 !important;
+body.dark-theme .btn-outline-secondary {
+    color: #fff;
+    border-color: #666;
 }
 
-html body.dark-theme .btn-outline-secondary:hover {
-    background-color: #555 !important;
-    color: #fff !important;
+body.dark-theme .btn-outline-secondary:hover {
+    background-color: #555;
+    color: #fff;
 }
 
-html body.dark-theme .form-control {
-    background-color: #444 !important;
-    color: #fff !important;
-    border-color: #555 !important;
+body.dark-theme .form-control {
+    background-color: #444;
+    color: #fff;
+    border-color: #555;
+}
+.interactive-code-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
 }
 
-html body.dark-theme .form-control:focus {
-    background-color: #555 !important;
-    color: #fff !important;
-    border-color: #666 !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1) !important;
+.interactive-code-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-html body.dark-theme .alert {
-    background-color: #555 !important;
-    color: #fff !important;
-    border-color: #666 !important;
+#code-input {
+    padding: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #f5f5f5;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    resize: vertical;
+    min-height: 100px;
 }
 
-html body.dark-theme .text-warning {
+#code-input:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 5px rgba(0, 128, 255, 0.5);
+}
+
+.code-result {
+    padding: 10px;
+    border-radius: 0.25rem;
+}
+.card-title {
+    color: #007bff;
+    font-weight: 600;
+}
+.card-text strong {
+    color: #555;
+}
+pre {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 0.9rem;
+}
+body.dark-theme pre {
+    background-color: #333;
+    color: #f5f5f5;
+}
+.alert {
+    margin-bottom: 0;
+}
+body.dark-theme .form-control:focus {
+    background-color: #555;
+    color: #fff;
+    border-color: #666;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .alert {
+    background-color: #555;
+    color: #fff;
+    border-color: #666;
+}
+
+body.dark-theme .text-warning {
     color: #ffca2c !important;
 }
 
-html body.dark-theme .text-danger {
+body.dark-theme .text-danger {
     color: #ff6b6b !important;
 }
 
@@ -164,8 +214,8 @@ html body.dark-theme .text-danger {
     font-size: 1.2rem;
 }
 
-html body.dark-theme #theme-toggle i {
-    color: #fff !important;
+body.dark-theme #theme-toggle i {
+    color: #fff;
 }
 
 /* Анимация для кнопок */

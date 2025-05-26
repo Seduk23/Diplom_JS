@@ -14,7 +14,7 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.db.models import Avg, Max, Min, Sum
-from .models import Course, Lesson, Test, Question, Answer, TestResult, Enrollment, StudentProgress, Achievement, UserAchievement
+from .models import Course, Lesson, Term, Test, Question, Answer, TestResult, Enrollment, StudentProgress, Achievement, UserAchievement
 from .forms import (
     CourseForm, LessonForm, TestForm, QuestionForm, AnswerForm,
     StudentSignUpForm, TeacherSignUpForm, TestSubmissionForm
@@ -289,6 +289,10 @@ def delete_lesson(request, lesson_id):
             messages.error(request, f"Ошибка при удалении урока: {str(e)}")
         return redirect('courses:manage_lessons', course_id=course.id)
     return redirect('courses:manage_lessons', course_id=course.id)
+
+def glossary(request):
+    terms = Term.objects.all()
+    return render(request, 'courses/glossary.html', {'terms': terms})
 
 @login_required
 @teacher_required

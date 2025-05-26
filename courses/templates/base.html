@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% trans "Образовательная платформа" %}{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
@@ -13,6 +14,80 @@
     <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
     <!-- Добавляем Chart.js для графиков -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <!-- Добавляем Prism.js для подсветки синтаксиса -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <!-- Добавляем CodeMirror для редактора кода -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/javascript/javascript.min.js"></script>
+    <!-- Добавляем тему для CodeMirror -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/theme/monokai.min.css">
+    <!-- Добавляем acorn.js для парсинга JavaScript -->
+    <script src="{% static 'js/acorn.js' %}" onload="console.log('acorn.js loaded successfully');" onerror="console.error('Failed to load acorn.js');"></script>
+    <!-- Добавляем js-interpreter для безопасного выполнения кода -->
+    <script src="{% static 'js/interpreter.min.js' %}" onload="console.log('js-interpreter loaded successfully');" onerror="console.error('Failed to load js-interpreter');"></script>
+    <!-- Кастомные стили для интерактивного блока -->
+    <style>
+        .interactive-code-card {
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .interactive-code-card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .CodeMirror {
+            width: 100%;
+            height: 200px;
+            font-family: 'Courier New', Courier, monospace;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+
+        .code-result {
+            padding: 10px;
+            border-radius: 0.25rem;
+        }
+
+        .alert {
+            margin-bottom: 0;
+        }
+
+        /* Темная тема */
+        body.dark-theme {
+            background-color: #1a1a1a;
+            color: #f5f5f5;
+        }
+
+        body.dark-theme .interactive-code-card {
+            border-color: #444;
+            background-color: #2a2a2a;
+        }
+
+        body.dark-theme .code-result {
+            background-color: #2a2a2a;
+        }
+
+        body.dark-theme .btn-outline-secondary {
+            color: #f5f5f5;
+            border-color: #f5f5f5;
+        }
+
+        body.dark-theme .btn-outline-secondary:hover {
+            background-color: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        /* Стили для поля поиска */
+        #searchInput {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark" data-aos="fade-down">
@@ -43,9 +118,12 @@
                                 <a class="nav-link" href="{% url 'courses:teacher_dashboard' %}">{% trans "Мои курсы" %}</a>
                             </li>
                         {% elif user.is_student %}
-                            <!-- Оставляем только "Личный кабинет" -->
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'courses:student_dashboard' %}">{% trans "Личный кабинет" %}</a>
+                            </li>
+                            <!-- Добавляем кнопку словаря для студентов -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'courses:glossary' %}">{% trans "Словарь" %}</a>
                             </li>
                         {% endif %}
                         <li class="nav-item d-flex align-items-center">
@@ -106,26 +184,21 @@
         AOS.init();
     </script>
     <script>
-        // Отладка: проверяем загрузку
         console.log("Theme toggle script loaded at:", new Date().toISOString());
-
         document.addEventListener('DOMContentLoaded', function() {
             console.log("DOM fully loaded and parsed");
-
             const themeToggle = document.getElementById('theme-toggle');
             if (!themeToggle) {
                 console.error("Theme toggle button not found! Check if <button id='theme-toggle'> exists in HTML.");
                 return;
             }
             console.log("Theme toggle button found!");
-
             const themeIcon = themeToggle.querySelector('i');
             if (!themeIcon) {
                 console.error("Theme icon not found inside theme toggle button!");
                 return;
             }
             console.log("Theme icon found!");
-
             themeToggle.addEventListener('click', function() {
                 console.log("Theme toggle clicked!");
                 document.body.classList.toggle('dark-theme');
@@ -138,8 +211,6 @@
                 console.log("Body classes:", document.body.className);
             });
             console.log("Click handler attached to theme toggle button");
-
-            // При загрузке страницы
             console.log("Checking stored theme...");
             if (localStorage.getItem('theme') === 'dark') {
                 console.log("Applying dark theme from localStorage");
