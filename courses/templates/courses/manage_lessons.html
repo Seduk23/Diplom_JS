@@ -9,7 +9,7 @@
     {% include 'partials/messages.html' %}
 
     <h3>{% trans "Добавить новый урок" %}</h3>
-    <form method="post" enctype="multipart/form-data" class="mb-4">
+    <form method="post" enctype="multipart/form-data" class="mb-4" id="add-lesson-form">
         {% csrf_token %}
         {{ lesson_form.as_p }}
         <button type="submit" class="btn btn-primary">{% trans "Добавить урок" %}</button>
@@ -91,74 +91,45 @@
             }
         }
 
-        // Инициализация CKEditor 5 для формы
-        if (typeof ClassicEditor === 'undefined') {
-            console.error('ClassicEditor is not defined. Ensure CKEditor 5 is included in base.html.');
+        // Инициализация TinyMCE для формы
+        if (typeof tinymce === 'undefined') {
+            console.error('TinyMCE is not defined. Ensure TinyMCE is included in base.html.');
         } else {
-            class MyUploadAdapter {
-                constructor(loader) {
-                    this.loader = loader;
+            tinymce.init({
+                selector: '#id_description, #id_content',
+                height: 300,
+                plugins: 'advlist autolink lists link image charmap print preview anchor',
+                toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | link image',
+                images_upload_url: '{% url "courses:upload_image" %}',
+                images_upload_handler: function(blobInfo, success, failure) {
+                    const data = new FormData();
+                    data.append('upload', blobInfo.blob());
+                    fetch('{% url "courses:upload_image" %}', {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                        body: data
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.url) {
+                            success(data.url);
+                        } else {
+                            failure(data.error || 'Не удалось загрузить изображение.');
+                        }
+                    })
+                    .catch(error => failure('Ошибка загрузки: ' + error));
                 }
+            });
+        }
 
-                upload() {
-                    return this.loader.file.then(file => new Promise((resolve, reject) => {
-                        const data = new FormData();
-                        data.append('upload', file);
-                        fetch('{% url "courses:upload_image" %}', {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRFToken': '{{ csrf_token }}'
-                            },
-                            body: data
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.url) {
-                                resolve({ default: data.url });
-                            } else {
-                                reject(data.error || 'Не удалось загрузить изображение.');
-                            }
-                        })
-                        .catch(error => {
-                            reject('Ошибка загрузки изображения: ' + error.message);
-                        });
-                    }));
+        // Синхронизация TinyMCE с формой перед отправкой
+        const form = document.getElementById('add-lesson-form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (typeof tinymce !== 'undefined') {
+                    tinymce.triggerSave(); // Сохраняем содержимое редактора в textarea
                 }
-
-                abort() {
-                    // Отмена загрузки, если нужно
-                }
-            }
-
-            function MyCustomUploadAdapterPlugin(editor) {
-                editor.plugins.get('FileRepository').createUploadAdapter = (loader) => new MyUploadAdapter(loader);
-            }
-
-            const descriptionField = document.querySelector('#id_description');
-            if (descriptionField) {
-                ClassicEditor.create(descriptionField, {
-                    extraPlugins: [MyCustomUploadAdapterPlugin],
-                    toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'blockQuote', 'insertTable', 'mediaEmbed', 'imageUpload', 'undo', 'redo'],
-                    height: 300
-                })
-                .then(editor => console.log('Description editor initialized', editor))
-                .catch(error => console.error('Error initializing description editor:', error));
-            } else {
-                console.warn('Description field (#id_description) not found in the form.');
-            }
-
-            const contentField = document.querySelector('#id_content');
-            if (contentField) {
-                ClassicEditor.create(contentField, {
-                    extraPlugins: [MyCustomUploadAdapterPlugin],
-                    toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'blockQuote', 'insertTable', 'mediaEmbed', 'imageUpload', 'undo', 'redo'],
-                    height: 400
-                })
-                .then(editor => console.log('Content editor initialized', editor))
-                .catch(error => console.error('Error initializing content editor:', error));
-            } else {
-                console.warn('Content field (#id_content) not found in the form.');
-            }
+            });
         }
 
         // Инициализация AOS

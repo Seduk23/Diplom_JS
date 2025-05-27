@@ -26,48 +26,48 @@
     </div>
 
     <!-- Мои курсы -->
-<div class="card mb-4" data-aos="fade-up">
-    <div class="card-header">
-        <h2>{% trans "Мои курсы" %}</h2>
-    </div>
-    <div class="card-body">
-        {% if enrollments %}
-            <div class="row">
-                {% for enrollment in enrollments %}
-                    {% with buttons=None|add_button:enrollment.course.id|add_button:'courses:course_detail,primary,View Course'|add_button:'courses:unenroll_course,outline-danger,Unenroll' %}
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            {% with progress_data=progress|dict_get:enrollment.course.id %}
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ enrollment.course.title }}</h5>
-                                        <p class="card-text">
-                                            {% trans "Прогресс" %}: {{ progress_data.completed }}/{{ progress_data.total }} ({{ progress_data.percent }}%)
-                                        </p>
-                                        <div class="progress">
-                                            <div class="progress-bar" role="progressbar" data-width="{{ progress_data.percent }}" aria-valuenow="{{ progress_data.percent }}" aria-valuemin="0" aria-valuemax="100"></div> <!-- stylelint-disable-line -->
-                                        </div>
-                                        <div class="mt-3">
-                                            {% for button in buttons %}
-                                                <a href="{% url button.url course_id=enrollment.course.id %}" class="btn btn-{{ button.style }} btn-sm me-2">
-                                                    {% trans button.label %}
-                                                </a>
-                                            {% endfor %}
+    <div class="card mb-4" data-aos="fade-up">
+        <div class="card-header">
+            <h2>{% trans "Мои курсы" %}</h2>
+        </div>
+        <div class="card-body">
+            {% if enrollments %}
+                <div class="row">
+                    {% for enrollment in enrollments %}
+                        {% with buttons=None|add_button:'courses:course_detail,primary,View Course'|add_button:'courses:unenroll_course,outline-danger,Unenroll' %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                {% with progress_data=progress|dict_get:enrollment.course.id %}
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ enrollment.course.title }}</h5>
+                                            <p class="card-text">
+                                                {% trans "Прогресс" %}: {{ progress_data.completed }}/{{ progress_data.total }} ({{ progress_data.percent }}%)
+                                            </p>
+                                            <div class="progress">
+                                                <div class="progress-bar" role="progressbar" data-width="{{ progress_data.percent }}" aria-valuenow="{{ progress_data.percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <div class="mt-3">
+                                                {% for button in buttons %}
+                                                    <a href="{% url button.url course_id=enrollment.course.id %}" class="btn btn-{{ button.style }} btn-sm me-2">
+                                                        {% trans button.label %}
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            {% endwith %}
-                        </div>
-                    {% endwith %}
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="alert alert-info" data-aos="fade-up">
-                {% trans "Нет курсов, на которые вы подписались." %}
-                <a href="{% url 'courses:home' %}" class="alert-link">{% trans "Просмотреть доступные курсы" %}</a>
-            </div>
-        {% endif %}
+                                {% endwith %}
+                            </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info" data-aos="fade-up">
+                    {% trans "Нет курсов, на которые вы подписались." %}
+                    <a href="{% url 'courses:home' %}" class="alert-link">{% trans "Просмотреть доступные курсы" %}</a>
+                </div>
+            {% endif %}
+        </div>
     </div>
-</div>
 
     <!-- Мой прогресс -->
     <div class="card mb-4" data-aos="fade-up">
@@ -169,6 +169,12 @@
                     }
                 }
             }
+        });
+
+        // Анимация прогресс-баров
+        document.querySelectorAll('.progress-bar').forEach(bar => {
+            const width = bar.getAttribute('data-width');
+            bar.style.width = width + '%';
         });
     });
 </script>
