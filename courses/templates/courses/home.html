@@ -1,24 +1,28 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n text_filters %}
 
 {% block title %}{% trans "Добро пожаловать на нашу платформу!" %}{% endblock %}
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
-    <h1>{% trans "Приветсвуем вас на нашей образовательной платформе" %}</h1>
+    <h1>{% trans "Приветствуем вас на нашей образовательной платформе" %}</h1>
     <p>{% trans "Начни изучать JavaScript с помощью наших курсов!" %}</p>
     <h3>{% trans "Доступные курсы" %}</h3>
-    <div class="row">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
         {% for course in courses %}
-            <div class="col-md-4 mb-4" data-aos="fade-up">
-                <div class="card">
+            <div class="col mb-4" data-aos="fade-up">
+                <div class="card h-100">
                     {% if course.image %}
-                        <img src="{{ course.image.url }}" class="card-img-top" alt="{{ course.title }}">
+                        <div class="card-img-top-container" style="max-height: 200px; overflow: hidden;">
+                            <img src="{{ course.image.url }}" class="img-fluid w-100" alt="{{ course.title }}" style="object-fit: scale-down; object-position: center;">
+                        </div>
                     {% endif %}
-                    <div class="card-body">
+                    <div class="card-body d-flex flex-column">
                         <h5 class="card-title">{{ course.title }}</h5>
-                        <p class="card-text">{{ course.description|truncatewords:20 }}</p>
-                        <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-primary">{% trans "Просмотр курсов" %}</a>
+                        <p class="card-text flex-grow-1">{{ course.description|clean_text|truncatewords:20 }}</p>
+                        <div class="mt-auto">
+                            <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-primary w-100">{% trans "Просмотр курсов" %}</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -27,4 +31,20 @@
         {% endfor %}
     </div>
 </div>
+
+<style>
+    .card-img-top-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: transparent;
+        min-height: 200px;
+    }
+    
+    .card-img-top-container img {
+        max-height: 200px;
+        width: auto;
+        max-width: 100%;
+    }
+</style>
 {% endblock %}
