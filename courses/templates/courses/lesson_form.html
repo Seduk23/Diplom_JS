@@ -8,7 +8,7 @@
     <h1 class="mb-4">{{ title }}</h1>
     {% include 'partials/messages.html' %}
 
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" id="lesson-form">
         {% csrf_token %}
         <div class="mb-3">
             <label for="{{ form.title.id_for_label }}" class="form-label">{% trans "Заголовок" %}</label>
@@ -67,45 +67,52 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        class MyUploadAdapter {
-            constructor(loader) {
-                this.loader = loader;
-            }
-            upload() {
-                return this.loader.file.then(file => new Promise((resolve, reject) => {
+        // Инициализация TinyMCE
+        if (typeof tinymce === 'undefined') {
+            console.error('TinyMCE is not defined. Ensure TinyMCE is included in base.html.');
+        } else {
+            tinymce.init({
+                selector: '#id_description, #id_content',
+                height: 300,
+                plugins: 'advlist autolink lists link image charmap print preview anchor',
+                toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | link image',
+                images_upload_url: '{% url "courses:upload_image" %}',
+                images_upload_handler: function(blobInfo, success, failure) {
                     const data = new FormData();
-                    data.append('upload', file);
+                    data.append('upload', blobInfo.blob());
                     fetch('{% url "courses:upload_image" %}', {
                         method: 'POST',
-                        headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
                         body: data
                     })
                     .then(response => response.json())
-                    .then(data => data.url ? resolve({ default: data.url }) : reject(data.error || 'Не удалось загрузить изображение.'))
-                    .catch(error => reject('Ошибка загрузки изображения: ' + error.message));
-                }));
-            }
-            abort() {}
+                    .then(data => {
+                        if (data.url) {
+                            success(data.url);
+                        } else {
+                            failure(data.error || 'Не удалось загрузить изображение.');
+                        }
+                    })
+                    .catch(error => failure('Ошибка загрузки: ' + error));
+                }
+            });
         }
 
-        function MyCustomUploadAdapterPlugin(editor) {
-            editor.plugins.get('FileRepository').createUploadAdapter = (loader) => new MyUploadAdapter(loader);
+        // Синхронизация TinyMCE с формой перед отправкой
+        const form = document.getElementById('lesson-form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (typeof tinymce !== 'undefined') {
+                    tinymce.triggerSave(); // Сохраняем содержимое редактора в textarea
+                }
+            });
         }
 
-        if (document.querySelector('#id_description')) {
-            ClassicEditor.create(document.querySelector('#id_description'), {
-                extraPlugins: [MyCustomUploadAdapterPlugin],
-                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'blockQuote', 'insertTable', 'mediaEmbed', 'imageUpload', 'undo', 'redo'],
-                height: 300
-            }).catch(error => console.error('Error initializing description editor:', error));
-        }
-
-        if (document.querySelector('#id_content')) {
-            ClassicEditor.create(document.querySelector('#id_content'), {
-                extraPlugins: [MyCustomUploadAdapterPlugin],
-                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'blockQuote', 'insertTable', 'mediaEmbed', 'imageUpload', 'undo', 'redo'],
-                height: 400
-            }).catch(error => console.error('Error initializing content editor:', error));
+        // Инициализация AOS
+        if (typeof AOS === 'undefined') {
+            console.error('AOS is not defined. Ensure AOS.js is included in base.html.');
+        } else {
+            AOS.init();
         }
     });
 </script>

@@ -56,7 +56,7 @@
                     <div class="card-body">
                         <h5 class="card-title">{% trans "Попробуй сам!" %}</h5>
                         <p class="card-text">{{ lesson.exercise|safe }}</p>
-                        <textarea id="editor"></textarea>
+                        <div id="editor" style="width: 100%; height: 200px; border: 1px solid #ccc;"></div>
                         <button class="btn btn-primary mt-3" id="check-code-btn">{% trans "Проверить" %}</button>
                         <div id="code-result" class="mt-3 code-result"></div>
                     </div>
@@ -140,149 +140,150 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://unpkg.com/monaco-editor@0.52.2/min/vs/loader.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing scripts');
 
-    // Проверка доступности CodeMirror
-    if (typeof CodeMirror === 'undefined') {
-        console.error('CodeMirror is not loaded! Please check the script inclusion in base.html.');
-        document.getElementById('code-result').innerHTML = '<div class="alert alert-danger">Ошибка: Редактор кода не загрузился. Обратитесь к администратору.</div>';
-        return;
-    }
-
-    // Инициализация CodeMirror
-    const editorElement = document.getElementById('editor');
-    if (!editorElement) {
-        console.error('Editor element not found!');
-        document.getElementById('code-result').innerHTML = '<div class="alert alert-danger">Ошибка: Элемент редактора не найден.</div>';
-        return;
-    }
-    console.log('Editor element found, initializing CodeMirror...');
-
-    const editor = CodeMirror.fromTextArea(editorElement, {
-        mode: 'javascript',
-        theme: 'monokai',
-        lineNumbers: true,
-        indentUnit: 4,
-        tabSize: 4,
-        indentWithTabs: false,
-        lineWrapping: true
-    });
-
-    // Восстановление сохранённого кода
-    const savedCode = localStorage.getItem('lastCode');
-    if (savedCode) editor.setValue(savedCode);
-
-    const resultDiv = document.getElementById('code-result');
-    const checkButton = document.getElementById('check-code-btn');
-    const expectedResult = "{{ lesson.expected_result }}";
-
-    if (!checkButton) {
-        console.error('Check button not found!');
-        return;
-    }
-
-    checkButton.addEventListener('click', function(e) {
-        e.preventDefault();
-        checkCode();
-    });
-
-    // Добавление проверки кода по Ctrl+Enter
-    editor.setOption('extraKeys', {
-        'Ctrl-Enter': function(cm) {
-            checkCode();
-        },
-        'Cmd-Enter': function(cm) {
-            checkCode();
-        }
-    });
-
-    function checkCode() {
-        console.log('checkCode called');
-        const code = editor.getValue();
-        resultDiv.innerHTML = ''; // Очистка предыдущих результатов
-
-        if (!code.trim()) {
-            resultDiv.innerHTML = '<div class="alert alert-warning">{% trans "Введите код для проверки." %}</div>';
-            return;
-        }
-
-        // Проверка доступности Interpreter и acorn
-        if (typeof Interpreter === 'undefined') {
-            console.error('Interpreter is not defined! Please check the js-interpreter script in base.html.');
-            resultDiv.innerHTML = '<div class="alert alert-danger">Ошибка: Интерпретатор не загружен. Функция проверки кода временно недоступна.</div>';
-            return;
-        }
-
-        if (typeof acorn === 'undefined') {
-            console.error('acorn is not defined! Please check the acorn.js script in base.html.');
-            resultDiv.innerHTML = '<div class="alert alert-danger">Ошибка: Парсер acorn не загружен. Функция проверки кода временно недоступна.</div>';
-            return;
-        }
-
-        try {
-            // Оборачиваем код в анонимную функцию
-            const wrappedCode = `(function() { ${code} })()`;
-            const ast = acorn.parse(wrappedCode, { ecmaVersion: 2020 });
-
-            // Инициализация интерпретатора с AST
-            const interpreter = new Interpreter(ast, function(interpreter, scope) {
-                const sandbox = {
-                    console: {
-                        log: function(text) {
-                            resultDiv.innerHTML += '<p>Лог: ' + text + '</p>';
-                        }
-                    },
-                    alert: function(text) {
-                        resultDiv.innerHTML += '<p>Алерта: ' + text + '</p>';
-                    }
-                };
-                for (let prop in sandbox) {
-                    interpreter.setProperty(scope, prop, interpreter.createNativeFunction(sandbox[prop]));
-                }
-            });
-
-            // Выполнение кода
-            interpreter.run();
-
-            // Получение результата (последнее значение в глобальном scope)
-            const userResult = interpreter.value;
-
-            if (userResult === null || userResult === undefined) {
-                resultDiv.innerHTML = '<div class="alert alert-warning">{% trans "Код выполнен, но результат не возвращён. Используйте return для вывода результата." %}</div>';
-            } else if (userResult == expectedResult) {
-                resultDiv.innerHTML = '<div class="alert alert-success">{% trans "Правильно! Ответ:" %} ' + userResult + '</div>';
-            } else {
-                resultDiv.innerHTML = '<div class="alert alert-danger">{% trans "Неправильно. Ожидаемый результат:" %} ' + expectedResult + '. {% trans "Ваш результат:" %} ' + userResult + '</div>';
-            }
-
-            // Сохранение кода после проверки
-            localStorage.setItem('lastCode', code);
-        } catch (error) {
-            console.error('Error executing code:', error);
-            resultDiv.innerHTML = '<div class="alert alert-danger">{% trans "Ошибка в коде:" %} ' + error.message + '</div>';
-        }
-    }
-
-    // Тестовые формы
-    const testForms = document.querySelectorAll('.test-form');
-    testForms.forEach(function(form) {
-        const testId = form.id.replace('testForm_', '');
-        form.addEventListener('submit', function(e) {
-            console.log('Form submitted for test ' + testId);
+    // Инициализация Monaco Editor
+    require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@0.52.2/min/vs' } });
+    require(['vs/editor/editor.main'], function() {
+        const editor = monaco.editor.create(document.getElementById('editor'), {
+            value: '// Введите ваш код здесь...\n',
+            language: 'javascript',
+            theme: 'vs-dark',
+            automaticLayout: true,
+            lineNumbers: 'on',
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false
         });
 
-        const submitButton = document.getElementById('submitTest_' + testId);
-        if (submitButton) {
-            submitButton.addEventListener('click', function(e) {
-                console.log('Submit button clicked for test ' + testId);
-            });
-        }
-    });
+        // Восстановление сохранённого кода
+        const savedCode = localStorage.getItem('lastCode');
+        if (savedCode) editor.setValue(savedCode);
 
-    Prism.highlightAll();
-    console.log('Prism initialized');
+        const resultDiv = document.getElementById('code-result');
+        const checkButton = document.getElementById('check-code-btn');
+        const expectedResult = "{{ lesson.expected_result | escapejs }}";
+
+        if (!checkButton) {
+            console.error('Check button not found!');
+            return;
+        }
+
+        checkButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            checkCode();
+        });
+
+        // Добавление проверки кода по Ctrl+Enter
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
+            checkCode();
+        });
+
+        function checkCode() {
+    console.log('checkCode called');
+    const code = editor.getValue();
+    resultDiv.innerHTML = ''; // Очистка предыдущих результатов
+
+    if (!code.trim()) {
+        resultDiv.innerHTML = '<div class="alert alert-warning">{% trans "Введите код для проверки." %}</div>';
+        return;
+    }
+
+    // Проверка доступности Interpreter и acorn
+    if (typeof Interpreter === 'undefined') {
+        console.error('Interpreter is not defined! Please check the js-interpreter script in base.html.');
+        resultDiv.innerHTML = '<div class="alert alert-danger">Ошибка: Интерпретатор не загружен. Функция проверки кода временно недоступна.</div>';
+        return;
+    }
+
+    if (typeof acorn === 'undefined') {
+        console.error('acorn is not defined! Please check the acorn.js script in base.html.');
+        resultDiv.innerHTML = '<div class="alert alert-danger">Ошибка: Парсер acorn не загружен. Функция проверки кода временно недоступна.</div>';
+        return;
+    }
+
+    try {
+        // Разделяем код на строки и извлекаем последнее выражение
+        const lines = code.trim().split('\n');
+        let lastExpression = lines[lines.length - 1].trim();
+
+        // Оборачиваем код для выполнения
+        let wrappedCode;
+        if (lastExpression.startsWith('return')) {
+            wrappedCode = `(function() { ${code} })()`;
+        } else {
+            // Если нет return, добавляем его к последнему выражению
+            lastExpression = lastExpression.replace(/;$/, ''); // Удаляем точку с запятой, если есть
+            wrappedCode = `(function() { ${lines.slice(0, -1).join('\n')}\n return ${lastExpression}; })()`;
+        }
+
+        const ast = acorn.parse(wrappedCode, { ecmaVersion: 2020 });
+
+        // Инициализация интерпретатора с AST
+        const interpreter = new Interpreter(ast, function(interpreter, scope) {
+            const sandbox = {
+                console: {
+                    log: function(text) {
+                        resultDiv.innerHTML += '<p>Лог: ' + text + '</p>';
+                    }
+                },
+                alert: function(text) {
+                    resultDiv.innerHTML += '<p>Алерта: ' + text + '</p>';
+                },
+                drawCats: function(x) {
+                    return x + " котов";
+                }
+            };
+            for (let prop in sandbox) {
+                interpreter.setProperty(scope, prop, interpreter.createNativeFunction(sandbox[prop]));
+            }
+        });
+
+        // Выполнение кода
+        interpreter.run();
+
+        // Получение результата
+        const userResult = interpreter.value;
+
+        // Сравниваем только результат с expected_result
+        const expectedResult = "{{ lesson.expected_result | escapejs }}";
+        if (userResult === null || userResult === undefined) {
+            resultDiv.innerHTML = '<div class="alert alert-warning">{% trans "Код выполнен, но результат не возвращён." %}</div>';
+        } else if (String(userResult) === expectedResult) {
+            resultDiv.innerHTML = '<div class="alert alert-success">{% trans "Правильно! Ответ:" %} ' + userResult + '</div>';
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">{% trans "Неправильно. Ожидаемый результат:" %} ' + expectedResult + '. {% trans "Ваш результат:" %} ' + userResult + '</div>';
+        }
+
+        // Сохранение кода после проверки
+        localStorage.setItem('lastCode', code);
+    } catch (error) {
+        console.error('Error executing code:', error);
+        resultDiv.innerHTML = '<div class="alert alert-danger">{% trans "Ошибка в коде:" %} ' + error.message + '</div>';
+    }
+}
+
+        // Тестовые формы
+        const testForms = document.querySelectorAll('.test-form');
+        testForms.forEach(function(form) {
+            const testId = form.id.replace('testForm_', '');
+            form.addEventListener('submit', function(e) {
+                console.log('Form submitted for test ' + testId);
+            });
+
+            const submitButton = document.getElementById('submitTest_' + testId);
+            if (submitButton) {
+                submitButton.addEventListener('click', function(e) {
+                    console.log('Submit button clicked for test ' + testId);
+                });
+            }
+        });
+
+        Prism.highlightAll();
+        console.log('Prism initialized');
+    });
 });
 </script>
 {% endblock %}

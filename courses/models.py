@@ -30,7 +30,7 @@ class Lesson(models.Model):
     is_published = models.BooleanField(default=True, verbose_name=_("Опубликован"))
     # Новые поля для интерактивного задания
     exercise = models.TextField(blank=True, null=True, verbose_name=_("Интерактивное задание"))
-    expected_result = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Ожидаемый результат"))
+    expected_result = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Ожидаемый результат"), help_text=_("Введите ожидаемый результат выполнения кода, например, 'Привет, я студент'"))
 
     class Meta:
         verbose_name = _("Урок")
