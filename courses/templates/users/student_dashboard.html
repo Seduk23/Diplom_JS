@@ -8,7 +8,7 @@
     <h1 class="mb-4">{% trans "Личный кабинет" %}</h1>
 
     <!-- Аналитика -->
-    <div class="card mb-4">
+    <div class="card mb-4" data-aos="fade-up">
         <div class="card-header">
             <h2>{% trans "Аналитика" %}</h2>
         </div>
@@ -26,32 +26,51 @@
     </div>
 
     <!-- Мои курсы -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h2>{% trans "Мои курсы" %}</h2>
-        </div>
-        <div class="card-body">
-            {% if enrollments %}
-                <div class="row">
-                    {% for enrollment in enrollments %}
-                        {% with buttons=None|add_button:enrollment.course.id|add_button:'courses:course_detail,primary,View Course'|add_button:'courses:unenroll_course,outline-danger,Unenroll' %}
-                            <div class="col-md-6 col-lg-4 mb-4">
-                                {% include 'partials/course_card.html' with course=enrollment.course progress=progress.enrollment.course.id test_results=test_results.enrollment.course.id buttons=buttons %}
-                            </div>
-                        {% endwith %}
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="alert alert-info" data-aos="fade-up">
-                    {% trans "Нет курсов, на которые вы подписались." %}
-                    <a href="{% url 'courses:home' %}" class="alert-link">{% trans "Просмотреть доступные курсы" %}</a>
-                </div>
-            {% endif %}
-        </div>
+<div class="card mb-4" data-aos="fade-up">
+    <div class="card-header">
+        <h2>{% trans "Мои курсы" %}</h2>
     </div>
+    <div class="card-body">
+        {% if enrollments %}
+            <div class="row">
+                {% for enrollment in enrollments %}
+                    {% with buttons=None|add_button:enrollment.course.id|add_button:'courses:course_detail,primary,View Course'|add_button:'courses:unenroll_course,outline-danger,Unenroll' %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            {% with progress_data=progress|dict_get:enrollment.course.id %}
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ enrollment.course.title }}</h5>
+                                        <p class="card-text">
+                                            {% trans "Прогресс" %}: {{ progress_data.completed }}/{{ progress_data.total }} ({{ progress_data.percent }}%)
+                                        </p>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" data-width="{{ progress_data.percent }}" aria-valuenow="{{ progress_data.percent }}" aria-valuemin="0" aria-valuemax="100"></div> <!-- stylelint-disable-line -->
+                                        </div>
+                                        <div class="mt-3">
+                                            {% for button in buttons %}
+                                                <a href="{% url button.url course_id=enrollment.course.id %}" class="btn btn-{{ button.style }} btn-sm me-2">
+                                                    {% trans button.label %}
+                                                </a>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endwith %}
+                        </div>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info" data-aos="fade-up">
+                {% trans "Нет курсов, на которые вы подписались." %}
+                <a href="{% url 'courses:home' %}" class="alert-link">{% trans "Просмотреть доступные курсы" %}</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
 
     <!-- Мой прогресс -->
-    <div class="card mb-4">
+    <div class="card mb-4" data-aos="fade-up">
         <div class="card-header">
             <h2>{% trans "Мой прогресс" %}</h2>
         </div>
@@ -77,7 +96,7 @@
     </div>
 
     <!-- Мои достижения -->
-    <div class="card mb-4">
+    <div class="card mb-4" data-aos="fade-up">
         <div class="card-header">
             <h2>{% trans "Мои достижения" %}</h2>
         </div>
@@ -87,7 +106,7 @@
                 <div class="row">
                     {% for ua in user_achievements %}
                         <div class="col-md-4 mb-3">
-                            <div class="card">
+                            <div class="card achievement-card">
                                 <div class="card-body">
                                     <h5 class="card-title">{{ ua.achievement.name }}</h5>
                                     <p class="card-text">{{ ua.achievement.description }}</p>
@@ -127,8 +146,8 @@
                 datasets: [{
                     label: '{% trans "Прогресс (%)" %}',
                     data: chartData.data,
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(52, 152, 219, 0.6)',
+                    borderColor: 'rgba(52, 152, 219, 1)',
                     borderWidth: 1
                 }]
             },

@@ -1,23 +1,26 @@
-{% load i18n %}
+{% load i18n text_filters %}
 <div class="card h-100" data-aos="fade-up">
     <div class="card-body">
         <h5 class="card-title">{{ course.title }}</h5>
-        <p class="card-text">{{ course.description|truncatewords:30 }}</p>
+        <p class="card-text">{{ course.description|clean_text|truncatewords:30 }}</p>
         {% if progress %}
             <p class="card-text">
                 {% trans "Прогресс" %}: {{ progress.percent }}% 
                 ({{ progress.completed }} / {{ progress.total }} {% trans "уроки" %})
             </p>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" data-width="{{ progress.percent }}" aria-valuenow="{{ progress.percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
         {% endif %}
         {% if buttons %}
             <div class="d-flex gap-2 mt-3">
                 {% for button in buttons %}
                     {% if button.style == 'danger' %}
-                        <button type="button" class="btn btn-{{ button.style }}" data-bs-toggle="modal" data-bs-target="#deleteCourseModal{{ course.id }}" data-aos="fade-right">
+                        <button type="button" class="btn btn-{{ button.style }} btn-sm" data-bs-toggle="modal" data-bs-target="#deleteCourseModal{{ course.id }}" data-aos="fade-right">
                             {% trans button.label %}
                         </button>
                     {% else %}
-                        <a href="{{ button.url }}" class="btn btn-{{ button.style }}" data-aos="fade-right">
+                        <a href="{{ button.url }}" class="btn btn-{{ button.style }} btn-sm" data-aos="fade-right">
                             {% trans button.label %}
                         </a>
                     {% endif %}
@@ -40,10 +43,10 @@
                 {% trans "Это действие нельзя отменить." %}
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Отмена" %}</button>
-                <form action="{% url 'courses:delete_course' course.id %}" method="post">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{% trans "Отмена" %}</button>
+                <form action="{% url 'courses:delete_course' course_id=course.id %}" method="post">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">{% trans "Удалить" %}</button>
+                    <button type="submit" class="btn btn-danger btn-sm">{% trans "Удалить" %}</button>
                 </form>
             </div>
         </div>

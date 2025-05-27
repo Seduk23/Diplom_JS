@@ -71,25 +71,35 @@ class Test(models.Model):
     def calculate_score(self, selected_answers):
         total_points = sum(q.points for q in self.questions.all())
         score = 0
-        answer_index = 0  # Индекс для прохода по selected_answers
+        answer_index = 0
 
         for question in self.questions.all():
+            if answer_index >= len(selected_answers):
+                break  # Прерываем, если закончились ответы
+
             if question.question_type == 'text':
                 selected_text = selected_answers[answer_index] if answer_index < len(selected_answers) else ""
                 correct_answer = question.answers.filter(is_correct=True).first()
                 if correct_answer and selected_text.strip().lower() == correct_answer.text.strip().lower():
                     score += question.points
-                answer_index += 1
-            else:
-                correct_answers = set(a.id for a in question.answers.filter(is_correct=True))
-                if question.question_type == 'single':
-                    selected = {selected_answers[answer_index].id} if answer_index < len(selected_answers) and isinstance(selected_answers[answer_index], Answer) else set()
                     answer_index += 1
-                else:  # multiple
-                    selected = {a.id for a in selected_answers[answer_index:answer_index + len(question.answers.filter(is_correct=True))] if isinstance(a, Answer)}
-                    answer_index += len(question.answers.filter(is_correct=True))
-                if selected == correct_answers:
-                    score += question.points
+        else:
+            correct_answers = set(a.id for a in question.answers.filter(is_correct=True))
+            if question.question_type == 'single':
+                if answer_index < len(selected_answers) and isinstance(selected_answers[answer_index], Answer):
+                    selected = {selected_answers[answer_index].id}
+                else:
+                    selected = set()
+                answer_index += 1
+            else:  # multiple
+                selected = set()
+                correct_answer_count = len(question.answers.filter(is_correct=True))
+                for i in range(answer_index, min(answer_index + correct_answer_count, len(selected_answers))):
+                    if isinstance(selected_answers[i], Answer):
+                        selected.add(selected_answers[i].id)
+                answer_index += correct_answer_count
+            if selected == correct_answers:
+                score += question.points
 
         return (score / total_points * 100) if total_points else 0
 

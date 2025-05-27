@@ -4,7 +4,7 @@ from django.views.generic import DetailView, CreateView, UpdateView, DeleteView
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+from django.contrib import messages  
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.http import JsonResponse
@@ -639,6 +639,7 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
         return context
 
     def post(self, request, *args, **kwargs):
+        from django.utils.translation import gettext_lazy as _
         self.object = self.get_object()
         lesson = self.object
         test_id = request.POST.get('test_id')
