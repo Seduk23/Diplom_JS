@@ -21,7 +21,7 @@
                         <h5 class="card-title">{{ course.title }}</h5>
                         <p class="card-text flex-grow-1">{{ course.description|clean_text|truncatewords:20 }}</p>
                         <div class="mt-auto">
-                            <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-primary w-100">{% trans "Просмотр курсов" %}</a>
+                            <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-primary w-100">{% trans "Просмотр курса" %}</a>
                         </div>
                     </div>
                 </div>
