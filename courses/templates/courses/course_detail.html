@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n course_tags %}
+{% load i18n text_filters %}
 
 {% block title %}{% trans "Курсы" %}: {{ course.title }}{% endblock %}
 
@@ -11,7 +11,7 @@
     <div class="card mb-4" data-aos="fade-up">
         <div class="card-body">
             <h5 class="card-title">{% trans "Детали курса" %}</h5>
-            <p class="card-text">{{ course.description|safe }}</p>
+            <p class="card-text">{{ course.description|clean_text }}</p>  {# Удаляем теги и HTML-сущности #}
             {% if user.is_teacher and course.teacher == user %}
                 <a href="{% url 'courses:course_edit' pk=course.pk %}" class="btn btn-primary" data-aos="fade-right">{% trans "Редактировать курс" %}</a>
                 <a href="{% url 'courses:manage_lessons' course.id %}" class="btn btn-outline-primary" data-aos="fade-right">{% trans "Управление уроками" %}</a>
@@ -33,7 +33,7 @@
                     <div class="card h-100" data-aos="fade-up">
                         <div class="card-body">
                             <h5 class="card-title">{{ lesson.title }}</h5>
-                            <p class="card-text">{{ lesson.description|truncatewords:20 }}</p>
+                            <p class="card-text">{{ lesson.description|clean_text|truncatewords:20 }}</p>
                             <a href="{% url 'courses:lesson_detail' lesson.id %}" class="btn btn-primary" data-aos="fade-right">{% trans "Просмотреть урок" %}</a>
                         </div>
                     </div>

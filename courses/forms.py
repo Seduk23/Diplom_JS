@@ -52,9 +52,9 @@ class QuestionForm(forms.ModelForm):
         model = Question
         fields = ['text', 'question_type', 'points']
         labels = {
-            'text': _("Question Text"),
-            'question_type': _("Question Type"),
-            'points': _("Points"),
+            'text': _("Текст вопроса"),
+            'question_type': _("Тип вопроса"),
+            'points': _("Баллы"),
         }
 
 class AnswerForm(forms.ModelForm):
@@ -62,8 +62,8 @@ class AnswerForm(forms.ModelForm):
         model = Answer
         fields = ['text', 'is_correct']
         labels = {
-            'text': _("Answer Text"),
-            'is_correct': _("Is Correct"),
+            'text': _("Текст ответа"),
+            'is_correct': _("Верный"),
         }
 
 class StudentSignUpForm(forms.ModelForm):

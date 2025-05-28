@@ -44,7 +44,7 @@ class Term(models.Model):
     term = models.CharField(max_length=100, unique=True, verbose_name=_("Термин"))
     definition_en = models.TextField(verbose_name=_("Определение (English)"))
     definition_ru = models.TextField(verbose_name=_("Определение (Русский)"))
-    definition_cn = models.TextField(blank=True, null=True, verbose_name=_("Определение (中文)"))
+    definition_cn = models.TextField(blank=True, null=True, verbose_name=_("Определение (Spanish)"))
     example_code = models.TextField(blank=True, verbose_name=_("Пример кода"))
 
     class Meta:
@@ -105,9 +105,9 @@ class Test(models.Model):
 
 class Question(models.Model):
     QUESTION_TYPES = (
-        ('single', _("Single Choice")),
-        ('multiple', _("Multiple Choice")),
-        ('text', _("Text Answer")),
+        ('single', _("Один вариант")),
+        ('multiple', _("Несколько вариантов")),
+        ('text', _("Текстовый ответ")),
     )
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='questions', verbose_name=_("Тест"))
     text = models.TextField(verbose_name=_("Текст вопроса"))

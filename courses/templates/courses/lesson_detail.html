@@ -171,6 +171,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Удаляем событие onDidChangeModelContent
+        // Проверка только по кнопке и Ctrl+Enter
         checkButton.addEventListener('click', function(e) {
             e.preventDefault();
             checkCode();
@@ -182,88 +184,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         function checkCode() {
-    console.log('checkCode called');
-    const code = editor.getValue();
-    resultDiv.innerHTML = ''; // Очистка предыдущих результатов
+            console.log('checkCode called');
+            const code = editor.getValue();
+            resultDiv.innerHTML = ''; // Очистка предыдущих результатов
 
-    if (!code.trim()) {
-        resultDiv.innerHTML = '<div class="alert alert-warning">{% trans "Введите код для проверки." %}</div>';
-        return;
-    }
-
-    // Проверка доступности Interpreter и acorn
-    if (typeof Interpreter === 'undefined') {
-        console.error('Interpreter is not defined! Please check the js-interpreter script in base.html.');
-        resultDiv.innerHTML = '<div class="alert alert-danger">Ошибка: Интерпретатор не загружен. Функция проверки кода временно недоступна.</div>';
-        return;
-    }
-
-    if (typeof acorn === 'undefined') {
-        console.error('acorn is not defined! Please check the acorn.js script in base.html.');
-        resultDiv.innerHTML = '<div class="alert alert-danger">Ошибка: Парсер acorn не загружен. Функция проверки кода временно недоступна.</div>';
-        return;
-    }
-
-    try {
-        // Разделяем код на строки и извлекаем последнее выражение
-        const lines = code.trim().split('\n');
-        let lastExpression = lines[lines.length - 1].trim();
-
-        // Оборачиваем код для выполнения
-        let wrappedCode;
-        if (lastExpression.startsWith('return')) {
-            wrappedCode = `(function() { ${code} })()`;
-        } else {
-            // Если нет return, добавляем его к последнему выражению
-            lastExpression = lastExpression.replace(/;$/, ''); // Удаляем точку с запятой, если есть
-            wrappedCode = `(function() { ${lines.slice(0, -1).join('\n')}\n return ${lastExpression}; })()`;
-        }
-
-        const ast = acorn.parse(wrappedCode, { ecmaVersion: 2020 });
-
-        // Инициализация интерпретатора с AST
-        const interpreter = new Interpreter(ast, function(interpreter, scope) {
-            const sandbox = {
-                console: {
-                    log: function(text) {
-                        resultDiv.innerHTML += '<p>Лог: ' + text + '</p>';
-                    }
-                },
-                alert: function(text) {
-                    resultDiv.innerHTML += '<p>Алерта: ' + text + '</p>';
-                },
-                drawCats: function(x) {
-                    return x + " котов";
-                }
-            };
-            for (let prop in sandbox) {
-                interpreter.setProperty(scope, prop, interpreter.createNativeFunction(sandbox[prop]));
+            if (!code.trim()) {
+                resultDiv.innerHTML = '<div class="alert alert-warning">{% trans "Введите код для проверки." %}</div>';
+                return;
             }
-        });
 
-        // Выполнение кода
-        interpreter.run();
+            // Нормализация введённого кода и ожидаемого результата
+            const normalizeCode = (text) => {
+                return text
+                    .trim()                    // Убираем пробелы в начале и конце
+                    .replace(/\s+/g, ' ')     // Заменяем множественные пробелы на один
+                    .toLowerCase();           // Приводим к нижнему регистру
+            };
 
-        // Получение результата
-        const userResult = interpreter.value;
+            const normalizedInput = normalizeCode(code);
+            const normalizedExpected = normalizeCode(expectedResult);
 
-        // Сравниваем только результат с expected_result
-        const expectedResult = "{{ lesson.expected_result | escapejs }}";
-        if (userResult === null || userResult === undefined) {
-            resultDiv.innerHTML = '<div class="alert alert-warning">{% trans "Код выполнен, но результат не возвращён." %}</div>';
-        } else if (String(userResult) === expectedResult) {
-            resultDiv.innerHTML = '<div class="alert alert-success">{% trans "Правильно! Ответ:" %} ' + userResult + '</div>';
-        } else {
-            resultDiv.innerHTML = '<div class="alert alert-danger">{% trans "Неправильно. Ожидаемый результат:" %} ' + expectedResult + '. {% trans "Ваш результат:" %} ' + userResult + '</div>';
+            // Сравниваем текст кода напрямую
+            if (normalizedInput === normalizedExpected) {
+                resultDiv.innerHTML = '<div class="alert alert-success">{% trans "Правильно!" %}</div>';
+            } else {
+                resultDiv.innerHTML = '<div class="alert alert-danger">{% trans "Неправильно, попробуйте еще раз"  %}</div>';
+            }
+
+            // Сохранение кода после проверки
+            localStorage.setItem('lastCode', code);
         }
-
-        // Сохранение кода после проверки
-        localStorage.setItem('lastCode', code);
-    } catch (error) {
-        console.error('Error executing code:', error);
-        resultDiv.innerHTML = '<div class="alert alert-danger">{% trans "Ошибка в коде:" %} ' + error.message + '</div>';
-    }
-}
 
         // Тестовые формы
         const testForms = document.querySelectorAll('.test-form');

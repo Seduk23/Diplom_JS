@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages  
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
@@ -218,7 +219,7 @@ def manage_lessons(request, course_id):
             lesson = lesson_form.save(commit=False)
             lesson.course = course
             lesson.save()
-            messages.success(request, _("Lesson added successfully!"))
+            messages.success(request, _("Урок добавлен!"))
             return redirect('courses:manage_lessons', course_id=course.id)
     else:
         lesson_form = LessonForm()
@@ -236,14 +237,15 @@ def manage_lessons(request, course_id):
         'lesson_form': lesson_form
     })
 
-@login_required
+@csrf_exempt  # Временно для тестирования
 def upload_image(request):
     if request.method == 'POST' and request.FILES.get('upload'):
         file = request.FILES['upload']
+        # Сохраняем файл в папке media/uploads
         file_path = os.path.join('uploads', file.name)
         file_path = default_storage.save(file_path, file)
         file_url = settings.MEDIA_URL + file_path
-        return JsonResponse({'url': file_url})
+        return JsonResponse({'location': file_url})  # TinyMCE ожидает 'location'
     return JsonResponse({'error': 'Неверный запрос'}, status=400)
 
 @login_required
@@ -336,7 +338,7 @@ def create_test(request, lesson_id):
             test = form.save(commit=False)
             test.lesson = lesson
             test.save()
-            messages.success(request, _("Test added successfully!"))
+            messages.success(request, _("Тест успешно добавлен!"))
             return redirect('courses:manage_test_questions', test_id=test.id)
     else:
         form = TestForm()
@@ -352,7 +354,7 @@ def manage_test_questions(request, test_id):
             question = question_form.save(commit=False)
             question.test = test
             question.save()
-            messages.success(request, _("Question added!"))
+            messages.success(request, _("Вопрос добавлен!"))
             return redirect('courses:manage_test_questions', test_id=test.id)
     else:
         question_form = QuestionForm()
@@ -380,7 +382,7 @@ def add_question(request, test_id):
                 answer.question = question
                 answer.order = i
                 answer.save()
-            messages.success(request, _("Question and answers added!"))
+            messages.success(request, _("Вопрос и ответ добавлен!"))
             return redirect('courses:manage_test_questions', test_id=test.id)
     else:
         question_form = QuestionForm()
@@ -419,7 +421,7 @@ class QuestionUpdateView(UpdateView):
             question_form.save()
             for af in answer_forms:
                 af.save()
-            messages.success(request, _("Question and answers updated!"))
+            messages.success(request, _("Вопрос и ответы обновлены!"))
             return redirect('courses:manage_test_questions', test_id=self.object.test.id)
         return self.render_to_response(self.get_context_data(form=question_form, answer_forms=answer_forms))
 
@@ -432,7 +434,7 @@ class QuestionDeleteView(DeleteView):
         return Question.objects.filter(test__lesson__course__creator=self.request.user)
 
     def get_success_url(self):
-        messages.success(self.request, _("Question deleted!"))
+        messages.success(self.request, _("Вопрос удален!"))
         return reverse_lazy('courses:manage_test_questions', kwargs={'test_id': self.object.test.id})
 
 @method_decorator([login_required, teacher_required], name='dispatch')
@@ -448,7 +450,7 @@ class AnswerCreateView(CreateView):
             test__lesson__course__creator=self.request.user
         )
         form.instance.question = question
-        messages.success(self.request, _("Answer added!"))
+        messages.success(self.request, _("Ответ добавлен!"))
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -464,7 +466,7 @@ class AnswerUpdateView(UpdateView):
         return Answer.objects.filter(question__test__lesson__course__creator=self.request.user)
 
     def form_valid(self, form):
-        messages.success(self.request, _("Answer updated!"))
+        messages.success(self.request, _("Ответ обновлен!"))
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -479,7 +481,7 @@ class AnswerDeleteView(DeleteView):
         return Answer.objects.filter(question__test__lesson__course__creator=self.request.user)
 
     def get_success_url(self):
-        messages.success(self.request, _("Answer deleted!"))
+        messages.success(self.request, _("Ответ удален!"))
         return reverse_lazy('courses:edit_question', kwargs={'pk': self.object.question.id})
 
 @login_required
@@ -499,7 +501,7 @@ def course_detail(request, course_id):
 def enroll_course(request, course_id):
     course = get_object_or_404(Course, id=course_id, is_active=True)
     Enrollment.objects.get_or_create(student=request.user, course=course)
-    messages.success(request, _(f"You are enrolled in {course.title}"))
+    messages.success(request, _(f"Вы подписаны на {course.title}"))
     return redirect('courses:course_detail', course_id=course.id)
 
 @login_required
@@ -507,7 +509,7 @@ def enroll_course(request, course_id):
 def unenroll_course(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     Enrollment.objects.filter(student=request.user, course=course).delete()
-    messages.success(request, _(f"You have unenrolled from {course.title}"))
+    messages.success(request, _(f"Вы отписаны от {course.title}"))
     return redirect('courses:student_dashboard')
 
 @method_decorator([login_required, teacher_required], name='dispatch')
@@ -521,7 +523,7 @@ class CourseUpdateView(UpdateView):
         return Course.objects.filter(creator=self.request.user)
 
     def form_valid(self, form):
-        messages.success(self.request, _("Course updated successfully!"))
+        messages.success(self.request, _("Курс успешно обновлен!"))
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -540,7 +542,7 @@ class LessonUpdateView(UpdateView):
         return Lesson.objects.filter(course__creator=self.request.user)
 
     def form_valid(self, form):
-        messages.success(self.request, _("Lesson updated successfully!"))
+        messages.success(self.request, _("Урок успешно обновлен!"))
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -646,7 +648,7 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
         test = get_object_or_404(Test, id=test_id, lesson=lesson)
 
         if not request.user.is_student or not test.questions.exists():
-            messages.error(request, _("No questions available for this test."))
+            messages.error(request, _("Для этого теста нет вопросов."))
             return redirect("courses:lesson_detail", lesson_id=lesson.id)
 
         attempt_number = TestResult.objects.filter(
@@ -656,7 +658,7 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
         if attempt_number > settings.MAX_TEST_ATTEMPTS:
             messages.error(
                 request,
-                _("You have exceeded the maximum number of attempts for this test.")
+                _("Вы набрали максимальное количество попыток в тесте.")
             )
             return redirect("courses:lesson_detail", lesson_id=lesson.id)
 
@@ -691,10 +693,10 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
                         UserAchievement.objects.get_or_create(user=request.user, achievement=achievement)
                         messages.success(request, _("Поздравляем! Вы получили достижение 'Первый завершённый урок'!"))
                 else:
-                    messages.warning(request, _("Test submitted, but you did not pass. Try again."))
+                    messages.warning(request, _("Результат отправлен, но вы не набрали нужное количество баллов."))
                 return redirect("courses:test_result", lesson_id=lesson.id)
             except Exception as e:
-                messages.error(request, _(f"Error processing test: {str(e)}"))
+                messages.error(request, _(f"Ошибка выполнения: {str(e)}"))
                 context["debug"]["form_errors"] = str(e)
         else:
             messages.error(request, _("Invalid test submission."))
@@ -725,11 +727,11 @@ def manage_test_results(request, test_id):
         action = request.POST.get('action')
         if action == 'delete_all':
             results.delete()
-            messages.success(request, _("All test results for this test have been deleted."))
+            messages.success(request, _("Все результаты тестов удалены."))
         elif action == 'delete_student':
             student_id = request.POST.get('student_id')
             results.filter(student_id=student_id).delete()
-            messages.success(request, _("Test results for the selected student have been deleted."))
+            messages.success(request, _("Результаты теста студента удалены."))
         return redirect('courses:manage_test_results', test_id=test.id)
 
     return render(request, 'courses/manage_test_results.html', {
