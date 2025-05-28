@@ -19,14 +19,14 @@
         </div>
         <div class="mb-3">
             <label for="{{ form.description.id_for_label }}" class="form-label">{% trans "Описание" %}</label>
-            <textarea name="description" id="id_description" class="form-control">{{ form.description.value|default_if_none:"" }}</textarea>
+            {{ form.description }}
             {% if form.description.errors %}
                 <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
             {% endif %}
         </div>
         <div class="mb-3">
             <label for="{{ form.content.id_for_label }}" class="form-label">{% trans "Материалы" %}</label>
-            <textarea name="content" id="id_content" class="form-control">{{ form.content.value|default_if_none:"" }}</textarea>
+            {{ form.content }}
             {% if form.content.errors %}
                 <div class="invalid-feedback d-block">{{ form.content.errors }}</div>
             {% endif %}
@@ -52,6 +52,13 @@
                 <div class="invalid-feedback d-block">{{ form.expected_result.errors }}</div>
             {% endif %}
         </div>
+        <div class="mb-3">
+            <label for="{{ form.order.id_for_label }}" class="form-label">{% trans "Порядок" %}</label>
+            {{ form.order }}
+            {% if form.order.errors %}
+                <div class="invalid-feedback d-block">{{ form.order.errors }}</div>
+            {% endif %}
+        </div>
         <div class="mb-3 form-check">
             {{ form.is_published }}
             <label for="{{ form.is_published.id_for_label }}" class="form-check-label">{% trans "Опубликовать" %}</label>
@@ -63,58 +70,20 @@
         <a href="{% url 'courses:manage_lessons' course_id=course.id %}" class="btn btn-secondary">{% trans "Отмена" %}</a>
     </form>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Инициализация TinyMCE
-        if (typeof tinymce === 'undefined') {
-            console.error('TinyMCE is not defined. Ensure TinyMCE is included in base.html.');
-        } else {
-            tinymce.init({
-                selector: '#id_description, #id_content',
-                height: 300,
-                plugins: 'advlist autolink lists link image charmap print preview anchor',
-                toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | link image',
-                images_upload_url: '{% url "courses:upload_image" %}',
-                images_upload_handler: function(blobInfo, success, failure) {
-                    const data = new FormData();
-                    data.append('upload', blobInfo.blob());
-                    fetch('{% url "courses:upload_image" %}', {
-                        method: 'POST',
-                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-                        body: data
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.url) {
-                            success(data.url);
-                        } else {
-                            failure(data.error || 'Не удалось загрузить изображение.');
-                        }
-                    })
-                    .catch(error => failure('Ошибка загрузки: ' + error));
-                }
-            });
-        }
-
-        // Синхронизация TinyMCE с формой перед отправкой
         const form = document.getElementById('lesson-form');
-        if (form) {
+        if (form && typeof tinymce !== 'undefined') {
             form.addEventListener('submit', function() {
-                if (typeof tinymce !== 'undefined') {
-                    tinymce.triggerSave(); // Сохраняем содержимое редактора в textarea
-                }
+                tinymce.triggerSave();
             });
         }
-
-        // Инициализация AOS
-        if (typeof AOS === 'undefined') {
-            console.error('AOS is not defined. Ensure AOS.js is included in base.html.');
-        } else {
+        if (typeof AOS !== 'undefined') {
             AOS.init();
         }
     });
 </script>
-{% endblock %}
 {% endblock %}

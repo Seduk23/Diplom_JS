@@ -12,7 +12,7 @@
     <form method="post" enctype="multipart/form-data" class="mb-4" id="add-lesson-form">
         {% csrf_token %}
         {{ lesson_form.as_p }}
-        <button type="submit" class="btn btn-primary">{% trans "Добавить урок" %}</button>
+        <button type="submit" class="btn btn-primary btn-uniform">{% trans "Добавить урок" %}</button>
     </form>
 
     <h3 class="mt-5">{% trans "Уроки" %}</h3>
@@ -35,11 +35,11 @@
                 <li>
                     {{ test.title }} (Вопросы: {{ test.questions.count }}, Опубликован: {{ test.is_active|yesno:"ДА,НЕТ" }})
                     <div class="btn-group" role="group">
-                        <a href="{% url 'courses:manage_test_questions' test_id=test.id %}" class="btn btn-sm btn-outline-primary">{% trans "Управление вопросами" %}</a>
-                        <a href="{% url 'courses:manage_test_results' test_id=test.id %}" class="btn btn-sm btn-outline-danger">{% trans "Управление результатами" %}</a>
+                        <a href="{% url 'courses:manage_test_questions' test_id=test.id %}" class="btn btn-sm btn-outline-primary btn-uniform">{% trans "Управление вопросами" %}</a>
+                        <a href="{% url 'courses:manage_test_results' test_id=test.id %}" class="btn btn-sm btn-outline-danger btn-uniform">{% trans "Управление результатами" %}</a>
                         <form method="post" action="{% url 'courses:delete_test' test_id=test.id %}" style="display:inline;">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger" data-confirm="{% trans 'Вы уверены, что хотите удалить тест' %} {{ test.title }}?">{% trans "Удалить тест" %}</button>
+                            <button type="submit" class="btn btn-sm btn-danger btn-uniform" data-confirm="{% trans 'Вы уверены, что хотите удалить тест' %} {{ test.title }}?">{% trans "Удалить тест" %}</button>
                         </form>
                     </div>
                 </li>
@@ -49,19 +49,19 @@
             <p>{% trans "Для этого урока нет тестов." %}</p>
             {% endif %}
             <div class="btn-group" role="group">
-                <a href="{% url 'courses:lesson_edit' pk=item.lesson.id %}" class="btn btn-sm btn-warning">{% trans "Редактировать" %}</a>
-                <a href="{% url 'courses:lesson_detail' lesson_id=item.lesson.id %}" class="btn btn-sm btn-info">{% trans "Просмотр" %}</a>
-                <a href="{% url 'courses:lesson_preview' lesson_id=item.lesson.id %}" class="btn btn-sm btn-outline-info">{% trans "Обложка" %}</a>
-                <a href="{% url 'courses:create_test' lesson_id=item.lesson.id %}" class="btn btn-sm btn-secondary">{% trans "Добавить тест" %}</a>
+                <a href="{% url 'courses:lesson_edit' pk=item.lesson.id %}" class="btn btn-sm btn-warning btn-uniform">{% trans "Редактировать" %}</a>
+                <a href="{% url 'courses:lesson_detail' lesson_id=item.lesson.id %}" class="btn btn-sm btn-info btn-uniform">{% trans "Просмотр" %}</a>
+                <a href="{% url 'courses:lesson_preview' lesson_id=item.lesson.id %}" class="btn btn-sm btn-outline-info btn-uniform">{% trans "Обложка" %}</a>
+                <a href="{% url 'courses:create_test' lesson_id=item.lesson.id %}" class="btn btn-sm btn-secondary btn-uniform">{% trans "Добавить тест" %}</a>
                 <form method="post" action="{% url 'courses:delete_lesson' lesson_id=item.lesson.id %}" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger" data-confirm="{% trans 'Вы уверены, что хотите удалить урок' %} {{ item.lesson.title }}?">{% trans "Удалить урок" %}</button>
+                    <button type="submit" class="btn btn-sm btn-danger btn-uniform" data-confirm="{% trans 'Вы уверены, что хотите удалить урок' %} {{ item.lesson.title }}?">{% trans "Удалить урок" %}</button>
                 </form>
             </div>
         </div>
         {% endfor %}
     </div>
-    <button class="btn btn-primary mt-3" onclick="saveOrder()">{% trans "Сохранить" %}</button>
+    <button class="btn btn-primary mt-3 btn-uniform" onclick="saveOrder()">{% trans "Сохранить" %}</button>
     {% else %}
     <div class="alert alert-info" data-aos="fade-up">
         {% trans "В этом курсе нет уроков." %}
@@ -91,44 +91,11 @@
             }
         }
 
-        // Инициализация TinyMCE для формы
-        if (typeof tinymce === 'undefined') {
-            console.error('TinyMCE is not defined. Ensure TinyMCE is included in base.html.');
-        } else {
-            tinymce.init({
-                selector: '#id_description, #id_content',
-                height: 300,
-                plugins: 'advlist autolink lists link image charmap print preview anchor',
-                toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | link image',
-                images_upload_url: '{% url "courses:upload_image" %}',
-                images_upload_handler: function(blobInfo, success, failure) {
-                    const data = new FormData();
-                    data.append('upload', blobInfo.blob());
-                    fetch('{% url "courses:upload_image" %}', {
-                        method: 'POST',
-                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-                        body: data
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.url) {
-                            success(data.url);
-                        } else {
-                            failure(data.error || 'Не удалось загрузить изображение.');
-                        }
-                    })
-                    .catch(error => failure('Ошибка загрузки: ' + error));
-                }
-            });
-        }
-
         // Синхронизация TinyMCE с формой перед отправкой
         const form = document.getElementById('add-lesson-form');
-        if (form) {
+        if (form && typeof tinymce !== 'undefined') {
             form.addEventListener('submit', function() {
-                if (typeof tinymce !== 'undefined') {
-                    tinymce.triggerSave(); // Сохраняем содержимое редактора в textarea
-                }
+                tinymce.triggerSave(); // Сохраняем содержимое редактора в textarea
             });
         }
 

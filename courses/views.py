@@ -545,6 +545,10 @@ class LessonUpdateView(UpdateView):
         messages.success(self.request, _("Урок успешно обновлен!"))
         return super().form_valid(form)
 
+    def form_invalid(self, form):
+        messages.error(self.request, _("Ошибка при обновлении урока. Проверьте форму."))
+        return super().form_invalid(form)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = _("Edit Lesson")
