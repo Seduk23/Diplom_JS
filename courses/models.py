@@ -26,9 +26,8 @@ class Lesson(models.Model):
     description = models.TextField(blank=True, null=True, verbose_name=_("Описание"))
     content = models.TextField(blank=True, verbose_name=_("Материалы"))
     video_url = models.URLField(blank=True, verbose_name=_("Ссылка видео"))
-    order = models.PositiveIntegerField(default=0, verbose_name=_("Выложить"))
+    order = models.PositiveIntegerField(default=0, verbose_name=_("Порядок"))
     is_published = models.BooleanField(default=True, verbose_name=_("Опубликован"))
-    # Новые поля для интерактивного задания
     exercise = models.TextField(blank=True, null=True, verbose_name=_("Интерактивное задание"))
     expected_result = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Ожидаемый результат"), help_text=_("Введите ожидаемый результат выполнения кода, например, 'Привет, я студент'"))
 
@@ -39,6 +38,12 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.id:  # При создании нового урока
+            last_lesson = Lesson.objects.filter(course=self.course).order_by('order').last()
+            self.order = last_lesson.order + 1 if last_lesson else 0
+        super().save(*args, **kwargs)
 
 class Term(models.Model):
     term = models.CharField(max_length=100, unique=True, verbose_name=_("Термин"))
