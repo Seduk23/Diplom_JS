@@ -5,9 +5,9 @@
 
 {% block content %}
 <div class="container mt-5" data-aos="fade-up">
-    <h1>{% trans "Приветствуем вас на нашей образовательной платформе" %}</h1>
-    <p>{% trans "Начни изучать JavaScript с помощью наших курсов!" %}</p>
-    <h3>{% trans "Доступные курсы" %}</h3>
+    <h1 class="welcome-title" data-aos="zoom-in">{% trans "Образовательная платформа" %}</h1>
+    <p class="welcome-text" data-aos="fade-up" data-aos-delay="400">{% trans "Начни изучать JavaScript с помощью наших курсов!" %}</p>
+    <h3 class="courses-title" data-aos="fade-up" data-aos-delay="400">{% trans "Доступные курсы" %}</h3>
     <div class="row row-cols-1 row-cols-md-3 g-4">
         {% for course in courses %}
             <div class="col mb-4" data-aos="fade-up">
@@ -33,6 +33,32 @@
 </div>
 
 <style>
+    /* Стили для текста p */
+    .welcome-text {
+    font-size: 2rem; /* Увеличиваем размер текста с 1.5rem до 2rem */
+    font-weight: 400; /* Нормальный вес */
+    color: #7f8c8d; /* Серый оттенок из твоей палитры */
+    padding-left: 1rem; /* Отступ для акцента */
+    border-left: 4px solid #000000; /* Голубая полоска */
+    margin-bottom: 2rem;
+    transition: color 0.3s ease, transform 0.3s ease; /* Плавные переходы */
+}
+
+    /* Эффект при наведении */
+    .welcome-text:hover {
+    color: #34495e; /* Более тёмный серый */
+    transform: translateX(10px); /* Смещение вправо */
+}
+
+    /* Адаптация для тёмной темы */
+    body.dark-theme .welcome-text {
+    color: #bdc3c7; /* Светло-серый */
+    border-left-color: #2980b9; /* Голубая полоска */
+}
+
+    body.dark-theme .welcome-text:hover {
+    color: #ecf0f1; /* Ещё светлее */
+}
     .card-img-top-container {
         display: flex;
         align-items: center;
