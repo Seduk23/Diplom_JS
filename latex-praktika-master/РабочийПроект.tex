@@ -1,744 +1,854 @@
 \section{Рабочий проект}
 
+\subsection{Спецификация класса Course}
 
-\subsection{Спецификация компонентов и классов системы}
+Модель Course хранит информацию о курсе, созданном преподавателем.
 
-\subsubsection{Спецификация класса User}
-User (Компонент управления пользователями) \\
-Описание: Представляет пользователя системы (студента или преподавателя). Используется для аутентификации, управления ролями и отслеживания активности пользователей. Расширяет встроенную модель Django AbstractUser.
+Описание: организует уроки и тесты, поддерживает мультиязычные названия и описания.
 
-Валидация данных: 
-\begin{itemize}
-	\item поля username, email, password валидируются через встроенные механизмы Django (django.contrib.auth); 
-	\item поля isstudent и isteacher — булевы, только одно из них может быть True (проверяется на уровне форм, например, StudentSignUpForm); 
-\end{itemize}
+Валидация данных:
+	\begin{itemize}
+		\item Поля title, description валидируются через CourseForm;
+		\item Поле image проверяется на формат (JPEG, PNG).
+	\end{itemize}
+	
+Связи:
+	\begin{itemize}
+		\item внешний ключ creator на User;
+		\item связан с Lesson, Enrollment.
+	\end{itemize}
+		
+Безопасность:
+	\begin{itemize}
+		\item редактирование доступно только creator через CourseUpdateView;
+		\item студенты видят только курсы с isactive=True.
+	\end{itemize}
+	
+Уведомления:
+	\begin{itemize}
+		\item уведомления через Django messages (например, «Курс создан»).
+	\end{itemize}
+	
+Основные методы:
+	\begin{itemize}
+		\item str(): возвращает title.
+		\item getabsoluteurl(): возвращает URL курса;
+		\item save(): обрабатывает изображение.
+	\end{itemize}
+	
+Зависимости:
+	\begin{itemize}
+		\item связан с Lesson, Test, Enrollment;
+		\item использует CKEditor для description.
+	\end{itemize}
 
-Безопасность: 
-\begin{itemize}
-	\item доступ к данным пользователя ограничен через декораторы (loginrequired, teacherrequired, studentrequired) в представлениях; 
-\end{itemize}
 
-Уведомления: 
-\begin{itemize}
-	\item уведомления о действиях пользователя (например, регистрация, смена пароля) отображаются через Django messages framework в представлениях; 
-\end{itemize}
-
-Основные методы: 
-\begin{itemize}
-	\item str(): возвращает имя пользователя (username); 
-	\item hasperm(perm, obj=None): проверяет права доступа пользователя; 
-	\item save(): переопределяется для автоматической проверки ролей (isstudent, isteacher) перед сохранением; 
-\end{itemize}
-
-Зависимости: 
-\begin{itemize}
-	\item встроенная модель Django (django.contrib.auth.models.AbstractUser); 
-	\item связан с моделями Enrollment, StudentProgress, UserAchievement через внешние ключи; 
-	\item используется в формах (StudentSignUpForm, TeacherSignUpForm) и представлениях (StudentSignUpView, TeacherSignUpView); 
-\end{itemize}
-
-Таблица 4.1 – Данные класса User \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|l|l|X|}
+	\caption{Данные класса Course\label{tab:course_attributes}}\\
 	\hline
-	Данные & Описание \\
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:course_attributes}}\\
 	\hline
-	username & уникальное имя пользователя; \\
-	email & электронная почта пользователя; \\
-	password & хэшированный пароль пользователя; \\
-	isstudent & булево поле, указывающее, является ли пользователь студентом; \\
-	isteacher & булево поле, указывающее, является ли пользователь преподавателем; \\
-	fields & поля модели User, доступные для заполнения (username, email, password, isstudent, isteacher); \\
-	\hline
-\end{tabular}
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endhead
+	id & Integer & да & Уникальный идентификатор \\ \hline
+	title & String & да & Название курса \\ \hline
+	description & Text & нет & Описание (HTML, CKEditor) \\ \hline
+	image & Image & нет & Изображение курса \\ \hline
+	isactive & Boolean & да & Статус публикации \\ \hline
+	creator & ForeignKey & да & Преподаватель (User) \\ \hline
+\end{xltabular}
 
-Таблица 4.2 – Методы класса User \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|X|}
+	\caption{Методы класса Course\label{tab:course_methods}}\\
 	\hline
-	Метод & Описание \\
+	Метод & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:course_methods}}\\
 	\hline
-	str() & возвращает имя пользователя (username); \\
-	hasperm(perm, obj=None) & проверяет права доступа пользователя на основе роли и разрешений; \\
-	save() & переопределяет сохранение для проверки ролей (isstudent, isteacher); \\
-	\hline
-\end{tabular}
+	Метод & Описание \\ \hline
+	\endhead
+	str() & Возвращает title \\ \hline
+	getabsoluteurl() & Возвращает URL курса \\ \hline
+	save() & Обрабатывает изображение \\ \hline
+\end{xltabular}
 
-\subsubsection{Спецификация класса Course}
-Course (Компонент управления курсами) \\
-Описание: Представляет учебный курс, созданный преподавателем. Хранит информацию о названии, описании, изображении и статусе публикации. Используется для организации уроков и тестов.
-
-Валидация данных: 
-\begin{itemize}
-	\item поля title, description валидируются через Django-формы (CourseForm); 
-	\item поле image проверяется на корректный формат (например, JPEG, PNG) через FileField валидаторы; 
-\end{itemize}
-
-Связи: 
-\begin{itemize}
-	\item связан с моделью User через поле creator (внешний ключ); 
-	\item связан с моделями Lesson и Enrollment через внешние ключи (course); 
-\end{itemize}
-
-Безопасность: 
-\begin{itemize}
-	\item доступ к редактированию курса ограничен через проверку creator в представлениях (например, CourseUpdateView); 
-	\item студенты могут просматривать только опубликованные курсы (isactive=True); 
-\end{itemize}
-
-Уведомления: 
-\begin{itemize}
-	\item уведомления о создании или обновлении курса отображаются через Django messages framework в представлениях (например, "Курс успешно обновлён"); 
-\end{itemize}
-
-Основные методы: 
-\begin{itemize}
-	\item str(): возвращает название курса (title); 
-	\item getabsoluteurl(): возвращает URL курса для маршрутизации (например, /courses/<id>/); 
-	\item save(): переопределяет сохранение для обработки изображения; 
-\end{itemize}
-
-Зависимости: 
-\begin{itemize}
-	\item взаимодействует с моделями Lesson, Test и Enrollment; 
-	\item используется в шаблонах (coursedetail.html, courseform.html) с CKEditor для редактирования описания; 
-	\item зависит от defaultstorage для хранения изображений; 
-\end{itemize}
-
-Таблица 4.3 – Данные класса Course \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
-	\hline
-	Данные & Описание \\
-	\hline
-	title & название курса; \\
-	description & описание курса (форматируется через CKEditor); \\
-	image & изображение курса (FileField); \\
-	isactive & булево поле, указывающее статус публикации курса; \\
-	creator & внешний ключ на User (преподаватель, создавший курс); \\
-	fields & поля модели Course, доступные для заполнения (title, description, image, isactive, creator); \\
-	\hline
-\end{tabular}
-
-Таблица 4.4 – Методы класса Course \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
-	\hline
-	Метод & Описание \\
-	\hline
-	str() & возвращает название курса (title); \\
-	getabsoluteurl() & возвращает URL курса для маршрутизации; \\
-	save() & переопределяет сохранение для обработки изображения; \\
-	\hline
-\end{tabular}
+\begin{lstlisting}[language=Python, caption=Представление для создания курса, label=lst:course_view]
+	from django.contrib.auth.decorators import login_required
+	from django.shortcuts import render, redirect
+	from .models import Course
+	from .forms import CourseForm
+	
+	@login_required
+	def create_course(request):
+	if not request.user.is_teacher:
+	return redirect('home')
+	if request.method == 'POST':
+	form = CourseForm(request.POST, request.FILES)
+	if form.is_valid():
+	course = form.save(commit=False)
+	course.creator = request.user
+	course.save()
+	return redirect('courses')
+	else:
+	form = CourseForm()
+	return render(request, 'courses/create.html', {'form': form})
+\end{lstlisting}
 
 \subsubsection{Спецификация класса Lesson}
-Lesson (Компонент управления уроками) \\
-Описание: Представляет урок в рамках курса. Хранит информацию о заголовке, описании, содержимом, видео, упражнении и порядке отображения. Используется для структурирования учебного материала.
 
-Валидация данных: 
-\begin{itemize}
-	\item поля title, description, content валидируются через Django-формы (LessonForm); 
-	\item поле videourl проверяется на корректность через валидаторы Django; 
-\end{itemize}
+Модель Lesson описывает урок в составе курса.
 
-Связи: 
-\begin{itemize}
-	\item связан с моделью Course через поле course (внешний ключ); 
-	\item связан с моделями Test и StudentProgress через внешние ключи (lesson); 
-\end{itemize}
+Описание: хранит контент, видео и упражнения, поддерживает мультиязычность.
 
-Безопасность: 
-\begin{itemize}
-	\item доступ к редактированию урока ограничен через проверку creator курса в представлениях (например, LessonUpdateView); 
-	\item студенты имеют доступ только к опубликованным урокам (ispublished=True); 
-\end{itemize}
+Валидация данных:
+	\begin{itemize}
+		\item поля title, content валидируются через LessonForm;
+		\item поле videourl проверяется на корректность.
+	\end{itemize}
+	
+Связи:
+	\begin{itemize}
+		\item внешний ключ course на Course;
+		\item связан с Test, StudentProgress.
+	\end{itemize}
+	
+Безопасность:
+	\begin{itemize}
+		\item редактирование ограничено creator курса;
+		\item доступ для студентов: ispublished=True.
+	\end{itemize}
+	
+Уведомления:
+	\begin{itemize}
+		\item уведомления через Django messages (например, «Урок добавлен»).
+	\end{itemize}
+	
+Основные методы:
+	\begin{itemize}
+		\item str(): возвращает title;
+		\item save(): проверяет order.
+	\end{itemize}
+	
+Зависимости:
+	\begin{itemize}
+		\item связан с Course, Test, StudentProgress;
+		\item использует CKEditor для content.
+	\end{itemize}
 
-Уведомления: 
-\begin{itemize}
-	\item уведомления о создании или обновлении урока отображаются через Django messages framework (например, "Урок успешно добавлен"); 
-\end{itemize}
 
-Основные методы: 
-\begin{itemize}
-	\item str(): возвращает название урока (title); 
-	\item save(): переопределяет сохранение для проверки порядка (order); 
-\end{itemize}
-
-Зависимости: 
-\begin{itemize}
-	\item взаимодействует с моделями Course, Test и StudentProgress; 
-	\item используется в шаблонах (lessondetail.html) с CKEditor для редактирования контента; 
-\end{itemize}
-
-Таблица 4.5 – Данные класса Lesson \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|l|l|X|}
+	\caption{Данные класса Lesson\label{tab:lesson_attributes}}\\
 	\hline
-	Данные & Описание \\
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:lesson_attributes}}\\
 	\hline
-	title & название урока; \\
-	description & описание урока; \\
-	content & содержимое урока (форматируется через CKEditor); \\
-	videourl & ссылка на видео урока; \\
-	order & порядок урока в курсе; \\
-	ispublished & булево поле, указывающее статус публикации урока; \\
-	exercise & интерактивное упражнение урока; \\
-	expectedresult & ожидаемый результат упражнения; \\
-	course & внешний ключ на Course; \\
-	fields & поля модели Lesson, доступные для заполнения (title, description, content, videourl, order, ispublished, exercise, expectedresult, course); \\
-	\hline
-\end{tabular}
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endhead
+	id & Integer & да & Уникальный идентификатор \\ \hline
+	title & String & да & Название урока \\ \hline
+	content & Text & да & Содержимое (HTML, CKEditor) \\ \hline
+	videourl & URL & нет & Ссылка на видео \\ \hline
+	order & Integer & да & Порядок урока \\ \hline
+	ispublished & Boolean & да & Статус публикации \\ \hline
+	exercise & Text & нет & Интерактивное упражнение \\ \hline
+	expectedresult & Text & нет & Ожидаемый результат \\ \hline
+	course & ForeignKey & да & Курс (Course) \\ \hline
+\end{xltabular}
 
-Таблица 4.6 – Методы класса Lesson \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|X|}
+	\caption{Методы класса Lesson\label{tab:lesson_methods}}\\
 	\hline
-	Метод & Описание \\
+	Метод & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:lesson_methods}}\\
 	\hline
-	str() & возвращает название урока (title); \\
-	save() & переопределяет сохранение для проверки порядка (order); \\
-	\hline
-\end{tabular}
+	Метод & Описание \\ \hline
+	\endhead
+	str() & Возвращает title \\ \hline
+	save() & Проверяет order \\ \hline
+\end{xltabular}
 
 \subsubsection{Спецификация класса Test}
-Test (Компонент управления тестами) \\
-Описание: Представляет тест, связанный с уроком. Хранит информацию о названии, описании, проходном балле и статусе активности. Используется для проверки знаний студентов.
 
-Валидация данных: 
-\begin{itemize}
-	\item поля title, description валидируются через Django-формы (TestForm); 
-	\item поле passingscore проверяется на положительное значение через валидаторы;
-\end{itemize}
+Модель Test описывает тест, связанный с уроком.
 
-Связи: 
-\begin{itemize}
-	\item связан с моделью Lesson через поле lesson (внешний ключ); 
-	\item связан с моделями Question и TestResult через внешние ключи (test); 
-\end{itemize}
+Описание: проверяет знания студентов, поддерживает мультиязычные вопросы.
 
-Безопасность: 
-\begin{itemize}
-	\item доступ к редактированию теста ограничен через проверку creator урока в представлениях (например, createtest); 
-	\item студенты могут проходить только активные тесты (isactive=True); 
-\end{itemize}
+Валидация данных:
+	\begin{itemize}
+		\item поля title, description валидируются через TestForm;
+		\item поле passingscore — положительное значение.
+	\end{itemize}
+	
+Связи:
+	\begin{itemize}
+		\item внешний ключ lesson на Lesson;
+		\item связан с Question, TestResult;
+	\end{itemize}
+	
+Безопасность:
+	\begin{itemize}
+		\item редактирование ограничено creator урока;
+		\item доступ для студентов: isactive=True;
+	\end{itemize}
+	
+Уведомления:
+	\begin{itemize}
+		\item уведомления через Django messages (например, «Тест создан»);
+	\end{itemize}
+	
+Основные методы:
+	\begin{itemize}
+		\item str(): возвращает title;
+		\item save(): проверяет passingscore.
+	\end{itemize}
+	
+Зависимости:
+	\begin{itemize}
+		\item связан с Lesson, Question, TestResult;
+		\item используется в testform.html.
+	\end{itemize}
 
-Уведомления: 
-\begin{itemize}
-	\item уведомления о создании теста отображаются через Django messages framework (например, "Тест успешно создан"); 
-\end{itemize}
 
-Основные методы: 
-\begin{itemize}
-	\item str(): возвращает название теста (title); 
-	\item save(): переопределяет сохранение для проверки passingscore; 
-\end{itemize}
-
-Зависимости: 
-\begin{itemize}
-	\item взаимодействует с моделями Lesson, Question и TestResult; 
-	\item используется в шаблонах (testform.html) и представлениях (createtest); 
-\end{itemize}
-
-Таблица 4.7 – Данные класса Test \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|l|l|X|}
+	\caption{Данные класса Test\label{tab:test_attributes}}\\
 	\hline
-	Данные & Описание \\
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:test_attributes}}\\
 	\hline
-	title & название теста; \\
-	description & описание теста; \\
-	passingscore & проходной балл теста; \\
-	isactive & булево поле, указывающее статус активности теста; \\
-	lesson & внешний ключ на Lesson; \\
-	fields & поля модели Test, доступные для заполнения (title, description, passingscore, isactive, lesson); \\
-	\hline
-\end{tabular}
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endhead
+	id & Integer & да & Уникальный идентификатор \\ \hline
+	title & String & да & Название теста \\ \hline
+	description & Text & нет & Описание теста \\ \hline
+	passingscore & Integer & да & Проходной балл \\ \hline
+	isactive & Boolean & да & Статус активности \\ \hline
+	lesson & ForeignKey & да & Урок (Lesson) \\ \hline
+\end{xltabular}
 
-Таблица 4.8 – Методы класса Test \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|X|}
+	\caption{Методы класса Test\label{tab:test_methods}}\\
 	\hline
-	Метод & Описание \\
+	Метод & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:test_methods}}\\
 	\hline
-	str() & возвращает название теста (title); \\
-	save() & переопределяет сохранение для проверки passingscore; \\
-	\hline
-\end{tabular}
+	Метод & Описание \\ \hline
+	\endhead
+	str() & Возвращает title \\ \hline
+	save() & Проверяет passingscore \\ \hline
+\end{xltabular}
 
 \subsubsection{Спецификация класса Question}
-Question (Компонент управления вопросами теста) \\
-Описание: Представляет вопрос в тесте. Хранит текст вопроса, тип вопроса (одиночный, множественный, текстовый) и баллы за правильный ответ.
 
-Валидация данных: 
-\begin{itemize}
-	\item поле text валидируется через Django-формы (QuestionForm); 
-	\item поле questiontype проверяется на допустимые значения (single, multiple, text); 
-	\item поле points проверяется на положительное значение; 
-\end{itemize}
+Модель Question описывает вопрос в тесте.
 
-Связи: 
-\begin{itemize}
-	\item связан с моделью Test через поле test (внешний ключ); 
-	\item связан с моделью Answer через внешний ключ (question); 
-\end{itemize}
 
-Безопасность: 
-\begin{itemize}
-	\item доступ к редактированию вопроса ограничен через проверку creator урока в представлениях (например, addquestion); 
-\end{itemize}
+Описание: поддерживает различные типы вопросов (одиночный, множественный, текстовый) с мультиязычным текстом.
 
-Уведомления: 
-\begin{itemize}
-	\item уведомления о добавлении вопроса отображаются через Django messages framework (например, "Вопрос успешно добавлен"); 
-\end{itemize}
+Валидация данных:
+	\begin{itemize}
+		\item поле text валидируется через QuestionForm;
+		\item поле questiontype принимает значения single, multiple, text;
+		\item поле points проверяется на положительное значение.
+	\end{itemize}
+	
+Связи:
+	\begin{itemize}
+		\item внешний ключ test на Test;
+		\item связан с Answer.
+	\end{itemize}
+	
+Безопасность:
+	\begin{itemize}
+		\item редактирование ограничено creator урока через представления;
+		\item доступ для студентов только через активные тесты.
+	\end{itemize}
+	
+Уведомления:
+	\begin{itemize}
+		\item уведомления через Django messages (например, «Вопрос добавлен»).
+	\end{itemize}
+	
+Основные методы:
+	\begin{itemize}
+		\item str(): возвращает text;
+		\item save(): проверяет questiontype и points.
+	\end{itemize}
+	
+Зависимости:
+	\begin{itemize}
+		\item связан с Test, Answer;
+		\item используется в шаблоне questionform.html.
+	\end{itemize}
 
-Основные методы: 
-\begin{itemize}
-	\item str(): возвращает текст вопроса (text); 
-	\item save(): переопределяет сохранение для проверки questiontype и points; 
-\end{itemize}
 
-Зависимости: 
-\begin{itemize}
-	\item взаимодействует с моделями Test и Answer; 
-	\item используется в шаблонах (questionform.html) и представлениях (addquestion); 
-\end{itemize}
-
-Таблица 4.9 – Данные класса Question \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|l|l|X|}
+	\caption{Данные класса Question\label{tab:question_attributes}}\\
 	\hline
-	Данные & Описание \\
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:question_attributes}}\\
 	\hline
-	text & текст вопроса; \\
-	questiontype & тип вопроса (single, multiple, text); \\
-	points & баллы за правильный ответ; \\
-	test & внешний ключ на Test; \\
-	fields & поля модели Question, доступные для заполнения (text, questiontype, points, test); \\
-	\hline
-\end{tabular}
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endhead
+	id & Integer & да & Уникальный идентификатор \\ \hline
+	text & Text & да & Текст вопроса \\ \hline
+	questiontype & String & да & Тип вопроса (single, multiple, text) \\ \hline
+	points & Integer & да & Баллы за ответ \\ \hline
+	test & ForeignKey & да & Тест (Test) \\ \hline
+\end{xltabular}
 
-Таблица 4.10 – Методы класса Question \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|X|}
+	\caption{Методы класса Question\label{tab:question_methods}}\\
 	\hline
-	Метод & Описание \\
+	Метод & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:question_methods}}\\
 	\hline
-	str() & возвращает текст вопроса (text); \\
-	save() & переопределяет сохранение для проверки questiontype и points; \\
-	\hline
-\end{tabular}
+	Метод & Описание \\ \hline
+	\endhead
+	str() & Возвращает text \\ \hline
+	save() & Проверяет questiontype и points \\ \hline
+\end{xltabular}
 
 \subsubsection{Спецификация класса Answer}
-Answer (Компонент управления ответами на вопросы) \\
-Описание: Представляет вариант ответа на вопрос в тесте. Хранит текст ответа, флаг правильности и порядок отображения.
 
-Валидация данных: 
-\begin{itemize}
-	\item поле text валидируется через Django-формы (AnswerForm); 
-	\item поле iscorrect — булево, проверяется на уровне формы; 
-	\item поле order проверяется на положительное значение; 
-\end{itemize}
+Модель Answer описывает вариант ответа на вопрос в тесте.
 
-Связи: 
-\begin{itemize}
-	\item связан с моделью Question через поле question (внешний ключ); 
-	\item используется в TestResult для хранения выбранных ответов; 
-\end{itemize}
+Описание: хранит текст ответа и флаг правильности, поддерживает мультиязычность.
 
-Безопасность: 
-\begin{itemize}
-	\item доступ к редактированию ответа ограничен через проверку creator урока в представлениях (например, AnswerCreateView); 
-\end{itemize}
+Валидация данных:
+	\begin{itemize}
+		\item поле text валидируется через AnswerForm;
+		\item поле iscorrect — булево, проверяется на уровне формы;
+		\item поле order проверяется на положительное значение.
+	\end{itemize}
+	
+Связи:
+	\begin{itemize}
+		\item внешний ключ question на Question;
+		\item используется в TestResult.
+	\end{itemize}
+	
+Безопасность:
+	\begin{itemize}
+		\item редактирование ограничено creator урока через AnswerCreateView;
+		\item доступ для студентов только через активные тесты.
+	\end{itemize}
+	
+Уведомления:
+	\begin{itemize}
+		\item уведомления через Django messages (например, «Ответ добавлен»).
+	\end{itemize}
+	
+Лсновные методы:
+	\begin{itemize}
+		\item str(): возвращает text;
+		\item save(): проверяет iscorrect и order.
+	\end{itemize}
+	
+Зависимости:
+	\begin{itemize}
+		\item связан с Question, TestResult;
+		\item используется в шаблоне answerform.html.
+	\end{itemize}
 
-Уведомления: 
-\begin{itemize}
-	\item уведомления о добавлении ответа отображаются через Django messages framework (например, "Ответ успешно добавлен"); 
-\end{itemize}
 
-Основные методы: 
-\begin{itemize}
-	\item str(): возвращает текст ответа (text); 
-	\item save(): переопределяет сохранение для проверки iscorrect и order; 
-\end{itemize}
-
-Зависимости: 
-\begin{itemize}
-	\item взаимодействует с моделями Question и TestResult; 
-	\item используется в шаблонах (answerform.html) и представлениях (AnswerCreateView); 
-\end{itemize}
-
-Таблица 4.11 – Данные класса Answer \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|l|l|X|}
+	\caption{Данные класса Answer\label{tab:answer_attributes}}\\
 	\hline
-	Данные & Описание \\
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:answer_attributes}}\\
 	\hline
-	text & текст ответа; \\
-	iscorrect & булево поле, указывающее правильность ответа; \\
-	order & порядок отображения ответа; \\
-	question & внешний ключ на Question; \\
-	fields & поля модели Answer, доступные для заполнения (text, iscorrect, order, question); \\
-	\hline
-\end{tabular}
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endhead
+	id & Integer & да & Уникальный идентификатор \\ \hline
+	text & Text & да & Текст ответа \\ \hline
+	iscorrect & Boolean & да & Признак правильности \\ \hline
+	order & Integer & да & Порядок отображения \\ \hline
+	question & ForeignKey & да & Вопрос (Question) \\ \hline
+\end{xltabular}
 
-Таблица 4.12 – Методы класса Answer \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|X|}
+	\caption{Методы класса Answer\label{tab:answer_methods}}\\
 	\hline
-	Метод & Описание \\
+	Метод & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:answer_methods}}\\
 	\hline
-	str() & возвращает текст ответа (text); \\
-	save() & переопределяет сохранение для проверки iscorrect и order; \\
-	\hline
-\end{tabular}
+	Метод & Описание \\ \hline
+	\endhead
+	str() & Возвращает text \\ \hline
+	save() & Проверяет iscorrect и order \\ \hline
+\end{xltabular}
 
 \subsubsection{Спецификация класса TestResult}
-TestResult (Компонент управления результатами тестов) \\
-Описание: Хранит результаты тестов, пройденных студентами. Содержит информацию о студенте, уроке, баллах, ответах и дате завершения.
 
-Валидация данных: 
-\begin{itemize}
-	\item поле score проверяется на положительное значение и соответствие максимальным баллам теста; 
-	\item поле answers валидируется через Django-формы (TestSubmissionForm); 
-\end{itemize}
+Модель TestResult хранит результаты прохождения тестов студентами.
 
-Связи: \\
-\begin{itemize}
-	\item связан с моделью User через поле student (внешний ключ); 
-	\item связан с моделью Lesson через поле lesson (внешний ключ); 
-	\item хранит ссылки на выбранные ответы (answers); 
-\end{itemize}
 
-Безопасность: 
-\begin{itemize}
-	\item доступ к результатам ограничен через проверку student или creator урока в представлениях (например, testresult); 
-\end{itemize}
+Описание: фиксирует баллы, выбранные ответы и дату завершения.
 
-Уведомления: 
-\begin{itemize}
-	\item уведомления о прохождении теста отображаются через Django messages framework (например, "Тест успешно пройден"); 
-\end{itemize}
+Валидация данных:
+	\begin{itemize}
+		\item поле score проверяется на положительное значение и соответствие максимуму теста;
+		\item поле answers валидируется через TestSubmissionForm.
+	\end{itemize}
+	
+Связи:
+	\begin{itemize}
+		\item внешний ключ student на User;
+		\item внешний ключ lesson на Lesson;
+		\item связь ManyToMany с Answer.
+	\end{itemize}
+	
+Безопасность:
+	\begin{itemize}
+		\item доступ ограничен student или creator урока через представления;
+		\item результаты видны только авторизованным пользователям.
+	\end{itemize}
+	
+Уведомления:
+	\begin{itemize}
+		\item уведомления через Django messages (например, «Тест успешно пройден»).
+	\end{itemize}
+	
+Основные методы:
+	\begin{itemize}
+		\item str(): возвращает информацию о результате (например, «Результат студента X по уроку Y»);
+		\item save(): пересчитывает score на основе answers.
+	\end{itemize}
+	
+Зависимости:
+	\begin{itemize}
+		\item связан с User, Lesson, Answer;
+		\item используется в шаблоне testresult.html.
+	\end{itemize}
 
-Основные методы: 
-\begin{itemize}
-	\item str(): возвращает данные о результате (например, "Результат студента X по уроку Y"); 
-	\item save(): переопределяет сохранение для пересчёта score на основе answers; 
-\end{itemize}
 
-Зависимости: 
-\begin{itemize}
-	\item взаимодействует с моделями User, Lesson и Answer; 
-	\item используется в шаблонах (testresult.html) и представлениях (testresult); 
-\end{itemize}
-
-Таблица 4.13 – Данные класса TestResult \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|l|l|X|}
+	\caption{Данные класса TestResult\label{tab:testresult_attributes}}\\
 	\hline
-	Данные & Описание \\
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:testresult_attributes}}\\
 	\hline
-	student & внешний ключ на User (студент); \\
-	lesson & внешний ключ на Lesson; \\
-	score & баллы, полученные за тест; \\
-	answers & выбранные ответы студента; \\
-	attempts & количество попыток прохождения теста; \\
-	completedat & дата и время завершения теста; \\
-	fields & поля модели TestResult, доступные для заполнения (student, lesson, score, answers, attempts, completedat); \\
-	\hline
-\end{tabular}
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endhead
+	id & Integer & да & Уникальный идентификатор \\ \hline
+	student & ForeignKey & да & Студент (User) \\ \hline
+	lesson & ForeignKey & да & Урок (Lesson) \\ \hline
+	score & Integer & да & Полученные баллы \\ \hline
+	answers & ManyToMany & да & Выбранные ответы \\ \hline
+	attempts & Integer & да & Количество попыток \\ \hline
+	completedat & DateTime & да & Дата завершения \\ \hline
+\end{xltabular}
 
-Таблица 4.14 – Методы класса TestResult \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|X|}
+	\caption{Методы класса TestResult\label{tab:testresult_methods}}\\
 	\hline
-	Метод & Описание \\
+	Метод & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:testresult_methods}}\\
 	\hline
-	str() & возвращает данные о результате (например, "Результат студента X по уроку Y"); \\
-	save() & переопределяет сохранение для пересчёта score на основе answers; \\
-	\hline
-\end{tabular}
+	Метод & Описание \\ \hline
+	\endhead
+	str() & Возвращает информацию о результате \\ \hline
+	save() & Пересчитывает score \\ \hline
+\end{xltabular}
 
 \subsubsection{Спецификация класса Enrollment}
-Enrollment (Компонент управления записями на курсы) \\
-Описание: Хранит информацию о записи студента на курс. Связывает студента и курс для отслеживания участия.
 
-Валидация данных: 
-\begin{itemize}
-	\item поля student и course проверяются на уникальность (студент не может записаться на один курс дважды); 
-	\item проверка осуществляется через Django ORM (uniquetogether); 
-\end{itemize}
+Модель Enrollment фиксирует запись студента на курс.
 
-Связи: 
-\begin{itemize}
-	\item связан с моделью User через поле student (внешний ключ); 
-	\item связан с моделью Course через поле course (внешний ключ); 
-\end{itemize}
 
-Безопасность: 
-\begin{itemize}
-	\item доступ к записи ограничен через проверку student в представлениях (например, enrollcourse); 
-	\item преподаватели могут просматривать записи через teacherdashboard; 
-\end{itemize}
+Описание: связывает студента и курс для отслеживания участия.
 
-Уведомления: 
-\begin{itemize}
-	\item уведомления о записи на курс отображаются через Django messages framework (например, "Вы записаны на курс"); 
-\end{itemize}
+Валидация данных:
+	\begin{itemize}
+		\item поля student и course проверяются на уникальность через uniquetogether.
+	\end{itemize}
+	
+Связи:
+	\begin{itemize}
+		\item внешний ключ student на User;
+		\item внешний ключ course на Course.
+	\end{itemize}
+	
+Безопасность:
+	\begin{itemize}
+		\item доступ ограничен student или преподавателю через представления;
+		\item преподаватели видят записи через teacherdashboard.
+	\end{itemize}
+	
+Уведомления:
+	\begin{itemize}
+		\item уведомления через Django messages (например, «Вы записаны на курс»).
+	\end{itemize}
+	
+Основные методы:
+	\begin{itemize}
+		\item str(): возвращает информацию о записи (например, «Студент X записан на курс Y»);
+		\item save(): проверяет уникальность записи.
+	\end{itemize}
+	
+Зависимости:
+	\begin{itemize}
+		\item связан с User, Course;
+		\item используется в представлениях enrollcourse, unenrollcourse.
+	\end{itemize}
 
-Основные методы: 
-\begin{itemize}
-	\item str(): возвращает данные о записи (например, "Студент X записан на курс Y"); 
-	\item save(): переопределяет сохранение для проверки уникальности записи; 
-\end{itemize}
 
-Зависимости: 
-\begin{itemize}
-	\item взаимодействует с моделями User и Course; 
-	\item используется в представлениях (enrollcourse, unenrollcourse); 
-\end{itemize}
-
-Таблица 4.15 – Данные класса Enrollment \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|l|l|X|}
+	\caption{Данные класса Enrollment\label{tab:enrollment_attributes}}\\
 	\hline
-	Данные & Описание \\
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:enrollment_attributes}}\\
 	\hline
-	student & внешний ключ на User (студент); \\
-	course & внешний ключ на Course; \\
-	fields & поля модели Enrollment, доступные для заполнения (student, course); \\
-	\hline
-\end{tabular}
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endhead
+	id & Integer & да & Уникальный идентификатор \\ \hline
+	student & ForeignKey & да & Студент (User) \\ \hline
+	course & ForeignKey & да & Курс (Course) \\ \hline
+\end{xltabular}
 
-Таблица 4.16 – Методы класса Enrollment \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|X|}
+	\caption{Методы класса Enrollment\label{tab:enrollment_methods}}\\
 	\hline
-	Метод & Описание \\
+	Метод & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:enrollment_methods}}\\
 	\hline
-	str() & возвращает данные о записи (например, "Студент X записан на курс Y"); \\
-	save() & переопределяет сохранение для проверки уникальности записи; \\
-	\hline
-\end{tabular}
+	Метод & Описание \\ \hline
+	\endhead
+	str() & Возвращает информацию о записи \\ \hline
+	save() & Проверяет уникальность \\ \hline
+\end{xltabular}
 
 \subsubsection{Спецификация класса StudentProgress}
-StudentProgress (Компонент управления прогрессом студентов) \\
-Описание: Хранит информацию о прогрессе студента по урокам. Отмечает завершённость уроков и дату завершения.
 
-Валидация данных: 
-\begin{itemize}
-	\item поле completed — булево, устанавливается через представления (например, completelesson); 
-	\item поле completedat автоматически заполняется текущей датой при установке completed=True; 
-\end{itemize}
+Модель StudentProgress отслеживает прогресс студента по урокам.
 
-Связи: 
-\begin{itemize}
-	\item связан с моделью User через поле student (внешний ключ); 
-	\item связан с моделью Lesson через поле lesson (внешний ключ); 
-\end{itemize}
 
-Безопасность: 
-\begin{itemize}
-	\item доступ к прогрессу ограничен через проверку student в представлениях (например, studentdashboard); 
-\end{itemize}
+Описание: фиксирует завершённость уроков и дату завершения.
 
-Уведомления: 
-\begin{itemize}
-	\item уведомления о завершении урока отображаются через Django messages framework (например, "Урок успешно завершён"); 
-\end{itemize}
+Валидация данных:
+	\begin{itemize}
+		\item Поле completed — булево, устанавливается через представления;
+		\item Поле completedat заполняется автоматически при completed=True.
+	\end{itemize}
+	
+Связи:
+	\begin{itemize}
+		\item внешний ключ student на User;
+		\item внешний ключ lesson на Lesson.
+	\end{itemize}
+	
+Безопасность:
+	\begin{itemize}
+		\item доступ ограничен student через представления;
+		\item преподаватели видят прогресс через teacherdashboard.
+	\end{itemize}
+	
+Уведомления:
+	\begin{itemize}
+		\item уведомления через Django messages (например, «Урок завершён»).
+	\end{itemize}
+	
+Основные методы:
+	\begin{itemize}
+		\item str(): возвращает информацию о прогрессе (например, «Прогресс студента X по уроку Y»);
+		\item save(): устанавливает completedat.
+	\end{itemize}
+	
+Зависимости:
+	\begin{itemize}
+		\item связан с User, Lesson;
+		\item используется в представлениях completelesson, studentdashboard.
+	\end{itemize}
 
-Основные методы: 
-\begin{itemize}
-	\item str(): возвращает данные о прогрессе (например, "Прогресс студента X по уроку Y"); 
-	\item save(): переопределяет сохранение для установки completedat; 
-\end{itemize}
 
-Зависимости: 
-\begin{itemize}
-	\item взаимодействует с моделями User и Lesson;
-	\item используется в представлениях (completelesson, studentdashboard); 
-\end{itemize}
-
-Таблица 4.17 – Данные класса StudentProgress \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|l|l|X|}
+	\caption{Данные класса StudentProgress\label{tab:studentprogress_attributes}}\\
 	\hline
-	Данные & Описание \\
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:studentprogress_attributes}}\\
 	\hline
-	student & внешний ключ на User (студент); \\
-	lesson & внешний ключ на Lesson; \\
-	completed & булево поле, указывающее завершённость урока; \\
-	completedat & дата завершения урока; \\
-	fields & поля модели StudentProgress, доступные для заполнения (student, lesson, completed, completedat); \\
-	\hline
-\end{tabular}
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endhead
+	id & Integer & да & Уникальный идентификатор \\ \hline
+	student & ForeignKey & да & Студент (User) \\ \hline
+	lesson & ForeignKey & да & Урок (Lesson) \\ \hline
+	completed & Boolean & да & Завершённость урока \\ \hline
+	completedat & DateTime & нет & Дата завершения \\ \hline
+\end{xltabular}
 
-Таблица 4.18 – Методы класса StudentProgress \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|X|}
+	\caption{Методы класса StudentProgress\label{tab:studentprogress_methods}}\\
 	\hline
-	Метод & Описание \\
+	Метод & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:studentprogress_methods}}\\
 	\hline
-	str() & возвращает данные о прогрессе (например, "Прогресс студента X по уроку Y"); \\
-	save() & переопределяет сохранение для установки completedat; \\
-	\hline
-\end{tabular}
+	Метод & Описание \\ \hline
+	\endhead
+	str() & Возвращает информацию о прогрессе \\ \hline
+	save() & Устанавливает completedat \\ \hline
+\end{xltabular}
 
 \subsubsection{Спецификация класса Achievement}
-Achievement (Компонент управления достижениями) \\
-Описание: Хранит информацию о достижениях, которые могут быть присвоены студентам (например, "Первый завершённый урок"). Содержит название и описание достижения.
 
-Валидация данных: 
-\begin{itemize}
-	\item поля title, description валидируются через Django-формы (AchievementForm); 
-	\item проверка уникальности title осуществляется через Django ORM; 
-\end{itemize}
+Модель Achievement описывает достижения, присваиваемые студентам.
 
-Связи: 
-\begin{itemize}
-	\item связан с моделью UserAchievement через внешний ключ (achievement); 
-\end{itemize}
 
-Безопасность: 
-\begin{itemize}
-	\item доступ к редактированию достижений ограничен через проверку isstaff в представлениях (для администраторов); 
-\end{itemize}
+Описание: хранит информацию о наградах (например, «Первый завершённый урок»)).
 
-Уведомления: 
-\begin{itemize}
-	\item уведомления о создании достижения отображаются через Django messages framework (например, "Достижение успешно создано"); 
-\end{itemize}
+Валидация данных:
+	\begin{itemize}
+		\item поля title, description валидируются через AchievementForm;
+		\item проверка уникальности title через Django ORM.
+	\end{itemize}
+	
+Связи:
+	\begin{itemize}
+		\item связан с UserAchievement через внешний ключ.
+	\end{itemize}
+	
+Безопасность:
+	\begin{itemize}
+		\item редактирование ограничено администраторам через isstaff.
+	\end{itemize}
+	
+Уведомления:
+	\begin{itemize}
+		\item уведомления через Django messages (например, «Достижение создано»).
+	\end{itemize}
+	
+Основные методы:
+	\begin{itemize}
+		\item str(): возвращает title;
+		\item save(): проверяет уникальность title.
+	\end{itemize}
+	
+Зависимости:
+	\begin{itemize}
+		\item связан с UserAchievement;
+		\item используется в studentdashboard.
+	\end{itemize}
 
-Основные методы: 
-\begin{itemize}
-	\item str(): возвращает название достижения (title); 
-	\item save(): переопределяет сохранение для проверки уникальности title; 
-\end{itemize}
 
-Зависимости: 
-\begin{itemize}
-	\item взаимодействует с моделью UserAchievement; 
-	\item используется в представлениях (studentdashboard) для отображения достижений; 
-\end{itemize}
-
-Таблица 4.19 – Данные класса Achievement \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|l|l|X|}
+	\caption{Данные класса Achievement\label{tab:achievement_attributes}}\\
 	\hline
-	Данные & Описание \\
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:achievement_attributes}}\\
 	\hline
-	title & название достижения; \\
-	description & описание достижения; \\
-	fields & поля модели Achievement, доступные для заполнения (title, description); \\
-	\hline
-\end{tabular}
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endhead
+	id & Integer & да & Уникальный идентификатор \\ \hline
+	title & String & да & Название достижения \\ \hline
+	description & Text & нет & Описание достижения \\ \hline
+\end{xltabular}
 
-Таблица 4.20 – Методы класса Achievement \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|X|}
+	\caption{Методы класса Achievement\label{tab:achievement_methods}}\\
 	\hline
-	Метод & Описание \\
+	Метод & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:achievement_methods}}\\
 	\hline
-	str() & возвращает название достижения (title); \\
-	save() & переопределяет сохранение для проверки уникальности title; \\
-	\hline
-\end{tabular}
+	Метод & Описание \\ \hline
+	\endhead
+	str() & Возвращает title \\ \hline
+	save() & Проверяет уникальность title \\ \hline
+\end{xltabular}
 
 \subsubsection{Спецификация класса UserAchievement}
-UserAchievement (Компонент управления достижениями пользователей) \\
-Описание: Хранит связь между пользователями и их достижениями. Используется для отслеживания, какие достижения были присвоены студентам.
 
-Валидация данных: 
-\begin{itemize}
-	\item поля user и achievement проверяются на уникальность (один пользователь не может получить одно достижение дважды); 
-	\item проверка осуществляется через Django ORM (uniquetogether); 
-\end{itemize}
+Модель UserAchievement связывает пользователей с достижениями.
 
-Связи: 
-\begin{itemize}
-	\item связан с моделью User через поле user (внешний ключ); 
-	\item связан с моделью Achievement через поле achievement (внешний ключ); 
-\end{itemize}
 
-Безопасность: 
-\begin{itemize}
-	\item доступ к данным ограничен через проверку user в представлениях (например, studentdashboard); 
-\end{itemize}
+Описание: отслеживает, какие достижения присвоены студентам.
 
-Уведомления: 
-\begin{itemize}
-	\item уведомления о присвоении достижения отображаются через Django messages framework (например, "Новое достижение получено!"); 
-\end{itemize}
+Валидация данных:
+	\begin{itemize}
+		\item поля user и achievement проверяются на уникальность через uniquetogether.
+	\end{itemize}
+	
+Связи:
+	\begin{itemize}
+		\item внешний ключ user на User;
+		\item внешний ключ achievement на Achievement;
+	\end{itemize}
+	
+Безопасность:
+	\begin{itemize}
+		\item доступ ограничен user через представления;
+		\item преподаватели видят достижения через teacherdashboard.
+	\end{itemize}
+	
+Уведомления:
+	\begin{itemize}
+		\item уведомления через Django messages (например, «Новое достижение получено»).
+	\end{itemize}
+	
+Основные методы:
+	\begin{itemize}
+		\item str(): возвращает информацию о достижении (например, «Достижение X для пользователя Y»);
+		\item save(): проверяет уникальность связи.
+	\end{itemize}
+	
+Зависимости:
+	\begin{itemize}
+		\item связан с User, Achievement;
+		\item используется в studentdashboard.
+	\end{itemize}
 
-Основные методы: 
-\begin{itemize}
-	\item str(): возвращает данные о достижении (например, "Достижение X для пользователя Y"); 
-	\item save(): переопределяет сохранение для проверки уникальности связи; 
-\end{itemize}
 
-Зависимости: 
-\begin{itemize}
-	\item взаимодействует с моделями User и Achievement; 
-	\item используется в представлениях (studentdashboard) для отображения достижений; 
-\end{itemize}
-
-Таблица 4.21 – Данные класса UserAchievement \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|l|l|X|}
+	\caption{Данные класса UserAchievement\label{tab:userachievement_attributes}}\\
 	\hline
-	Данные & Описание \\
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:userachievement_attributes}}\\
 	\hline
-	user & внешний ключ на User; \\
-	achievement & внешний ключ на Achievement; \\
-	fields & поля модели UserAchievement, доступные для заполнения (user, achievement); \\
-	\hline
-\end{tabular}
+	Поле & Тип & Обязательное & Описание \\ \hline
+	\endhead
+	id & Integer & да & Уникальный идентификатор \\ \hline
+	user & ForeignKey & да & Пользователь (User) \\ \hline
+	achievement & ForeignKey & да & Достижение (Achievement) \\ \hline
+	awardedat & DateTime & да & Дата присвоения \\ \hline
+\end{xltabular}
 
-Таблица 4.22 – Методы класса UserAchievement \\
-\begin{tabular}{|p{4cm}|p{8cm}|}
+\begin{xltabular}{\textwidth}{|l|X|}
+	\caption{Методы класса UserAchievement\label{tab:userachievement_methods}}\\
 	\hline
-	Метод & Описание \\
+	Метод & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:userachievement_methods}}\\
 	\hline
-	str() & возвращает данные о достижении (например, "Достижение X для пользователя Y"); \\
-	save() & переопределяет сохранение для проверки уникальности связи; \\
-	\hline
-\end{tabular}
-
+	Метод & Описание \\ \hline
+	\endhead
+	str() & Возвращает информацию о достижении \\ \hline
+	save() & Проверяет уникальность связи \\ \hline
+\end{xltabular}
 
 \subsection{Модульное тестирование разработанного веб-приложения}
 
-Модульный тест для класса User из модели данных представлен на рисунке \ref{unitUser:image}.
+Модульное тестирование проводилось с использованием фреймворка django.test. Тестировались основные функции системы: регистрация пользователей, создание курсов, добавление уроков, прохождение тестов и локализация.
 
-\begin{figure}[ht]
-	\begin{lstlisting}[language=Python]
-		from django.test import TestCase
-		from django.contrib.auth import get_user_model
-		from .models import Course
-		
-		User = get_user_model()
-		
-		class EducationPlatformTestCases(TestCase):
-		
-		def setUp(self) -> None:
-		self.user = User.objects.create(username='teststudent', password='testpass123', first_name='John', last_name='Doe', is_student=True)
-		self.course = Course.objects.create(title='JavaScript Basics', description='Introduction to JavaScript', creator=self.user)
-		
-		def test_user_and_course(self):
-		self.assertEqual(self.user.first_name, 'John')
-		self.assertEqual(self.user.last_name, 'Doe')
-		self.assertTrue(self.user.is_student)
-		self.assertEqual(self.course.title, 'JavaScript Basics')
-		print(self.user)
-		print(self.course.title)
-	\end{lstlisting}  
-	\caption{Модульный тест классов User и Course}
-	\label{unitUser:image}
-\end{figure}
+Тестируемые компоненты:
+	\begin{enumerate}
+		\item Модель User: проверка создания пользователей с ролями.
+		\item Модель Course: проверка создания и валидации курсов.
+		\item Модель Test: проверка подсчёта баллов.
+		\item Локализация: переключение языков (ru/en).
+	\end{enumerate}
+Инструменты: django.test.TestCase, unittest.
+Результаты: все тесты выполнены успешно.
+
+
+\begin{lstlisting}[language=Python, caption=Модульный тест для User и Course, label=lst:user_course_test]
+	from django.test import TestCase
+	from django.contrib.auth import get_user_model
+	from .models import Course
+	
+	User = get_user_model()
+	
+	class EducationPlatformTestCases(TestCase):
+	def setUp(self):
+	self.user = User.objects.create_user(username='teststudent', password='testpass123', is_student=True)
+	self.course = Course.objects.create(title='JavaScript Basics', description='Introduction to JavaScript', creator=self.user)
+	
+	def test_user_and_course(self):
+	self.assertEqual(self.user.username, 'teststudent')
+	self.assertTrue(self.user.is_student)
+	self.assertEqual(self.course.title, 'JavaScript Basics')
+\end{lstlisting}
+
+\begin{xltabular}{\textwidth}{|X|l|X|}
+	\caption{Результаты модульного тестирования\label{tab:module_testing_results}}\\
+	\hline
+	Тест & Статус & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:module_testing_results}}\\
+	\hline
+	Тест & Статус & Описание \\ \hline
+	\endhead
+	Регистрация пользователя & Успешно & Проверена корректность создания пользователя с ролями \\ \hline
+	Создание курса & Успешно & Проверено создание курса преподавателем \\ \hline
+	Добавление урока & Успешно & Проверена сортировка уроков по order \\ \hline
+	Прохождение теста & Успешно & Проверен подсчёт баллов \\ \hline
+	Локализация интерфейса & Успешно & Проверено переключение языков (ru/en) \\ \hline
+\end{xltabular}
 
 \subsection{Системное тестирование разработанного веб-приложения}
 
-На рисунке \ref{main:image} представлена главная страница веб-приложения — обучающей платформы для изучения JavaScript.
+Системное тестирование проводилось для проверки взаимодействия компонентов и интерфейса.
 
-\begin{figure}[H]
-	\center{\includegraphics[width=1\linewidth]{UML}}
-	\center{\includegraphics[width=1\linewidth]{UML}}
-	\center{\includegraphics[width=1\linewidth]{UML}}
-	\caption{Главная страница обучающей платформы}
-	\label{main:image}
-\end{figure}
+Сценарии тестирования:
+	\begin{enumerate}
+		\item Регистрация и авторизация пользователя.
+		\item Создание курса и запись студента.
+		\item Добавление урока с контентом через CKEditor.
+		\item Прохождение теста и просмотр результатов.
+		\item Переключение языка интерфейса.
+	\end{enumerate}
+Результаты: все сценарии выполнены успешно;
 
-На рисунке \ref{course:image} представлен интерфейс просмотра курса с динамическим отображением уроков и тестов по JavaScript.
 
-\begin{figure}[ht]
-	\center{\includegraphics[width=1\linewidth]{UML}}
-	\caption{Интерфейс просмотра курса}
-	\label{course:image}
-\end{figure}
+\begin{xltabular}{\textwidth}{|X|l|X|}
+	\caption{Результаты системного тестирования\label{tab:system_testing_results}}\\
+	\hline
+	Сценарий & Статус & Описание \\ \hline
+	\endfirsthead
+	\continuecaption{Продолжение таблицы \ref{tab:system_testing_results}}\\
+	\hline
+	Сценарий & Статус & Описание \\ \hline
+	\endhead
+	Регистрация и авторизация & Успешно & Пользователи регистрируются и входят \\ \hline
+	Создание и запись на курс & Успешно & Курс создаётся, студенты записываются \\ \hline
+	Добавление урока & Успешно & Урок добавляется, контент отображается \\ \hline
+	Прохождение теста & Успешно & Тесты проходятся, результаты сохраняются \\ \hline
+	Локализация & Успешно & Интерфейс переключается между языками \\ \hline
+\end{xltabular}
 
-На рисунке \ref{test:image} представлен интерфейс сдачи теста по JavaScript с динамической формой для выбора ответов.
 
-\begin{figure}[ht]
-	\center{\includegraphics[width=1\linewidth]{курсы}}
-	\caption{Интерфейс сдачи теста}
-	\label{test:image}
-\end{figure}
+\subsection{Сборка компонентов системы}
+
+Веб-приложение построено по архитектуре MVC, реализованной в Django.
+
+Компоненты:
+\begin{enumerate}
+		\item Модели: описаны выше, обеспечивают работу с данными через ORM.
+		\item Представления: функции с декораторами loginrequired, teacherrequired.
+		\item Шаблоны: используют Bootstrap, CKEditor, AOS.
+		\item Маршруты: определены в urls.py.
+\end{enumerate}
+		
+Настройка:
+\begin{itemize}
+		\item установка Python, Django, SQLite/PostgreSQL;
+		\item настройка CKEditor, AOS, Bootstrap;
+		\item локализация через django.utils.translation.
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption=Маршруты приложения, label=lst:urls]
+	from django.urls import path
+	from . import views
+	
+	urlpatterns = [
+	path('courses/', views.course_list, name='courses'),
+	path('courses/create/', views.create_course, name='create_course'),
+	path('courses/<int:pk>/', views.course_detail, name='course_detail'),
+	]
+\end{lstlisting}

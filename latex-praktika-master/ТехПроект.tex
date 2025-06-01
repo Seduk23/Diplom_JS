@@ -40,13 +40,25 @@
 Архитектура представлена на диаграмме компонентов (см. рис.~\ref{diag:image}).
 \newpage
 \begin{figure}[h]
-	\centering{\includegraphics[width=0.7\linewidth]{images/диаграмма1}}
+	\centering{\includegraphics[width=1\linewidth]{images/диаграмма1}}
 	\caption{Диаграмма компонентов}
 	\label{diag:image}
 \end{figure}
 
 \subsection{Структура базы данных}
 
+\subsubsection{Концептуальная модель данных}
+
+На рисунке~\ref{conceptual_model} представлена концептуальная модель данных разрабатываемой обучающей платформы.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.95\textwidth]{images/концептуальная}
+	\caption{Концептуальная модель данных обучающей платформы}
+	\label{conceptual_model}
+\end{figure}
+
+Данная модель отражает основные сущности системы и связи между ними на логическом уровне.
 Проанализировав требования, выделены следующие основные сущности:
 \begin{itemize}
 	\item курсы;
@@ -61,12 +73,14 @@
 	\item связь пользователей и курсов.
 \end{itemize}
 
-Отношения между таблицами базы данных отражены на схеме (см. рис.~\ref{bd:image}).
+\subsubsection{Схема структуры базы данных}
+
+На рисунке~\ref{bd:image} представлена схема структуры базы данных системы, отражающая таблицы, их атрибуты, ключи и связи между ними.
 
 \begin{landscape}
 	\begin{figure}[ht]
 		\centering
-		\includegraphics[width=1.2\textwidth]{images/бд} 
+		\includegraphics[width=1.3\textwidth]{images/бд} 
 		\caption{Структура базы данных}
 		\label{bd:image}
 	\end{figure}
