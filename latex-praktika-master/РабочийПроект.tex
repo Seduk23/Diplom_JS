@@ -742,54 +742,292 @@
 	save() & Проверяет уникальность связи \\ \hline
 \end{xltabular}
 
-\subsection{Модульное тестирование разработанного веб-приложения}
+\subsection{Модульное тестирование классов и методов программы}
 
-Модульное тестирование проводилось с использованием фреймворка django.test. Тестировались основные функции системы: регистрация пользователей, создание курсов, добавление уроков, прохождение тестов и локализация.
+Модульное тестирование проводилось для проверки корректности работы всех классов и методов обучающей платформы, разработанной на Django. Тестирование выполнялось с использованием фреймворка django.test, который позволяет создавать изолированные тестовые сценарии для моделей, представлений и форм.
 
 Тестируемые компоненты:
-	\begin{enumerate}
-		\item Модель User: проверка создания пользователей с ролями.
-		\item Модель Course: проверка создания и валидации курсов.
-		\item Модель Test: проверка подсчёта баллов.
-		\item Локализация: переключение языков (ru/en).
-	\end{enumerate}
-Инструменты: django.test.TestCase, unittest.
-Результаты: все тесты выполнены успешно.
-
-
-\begin{lstlisting}[language=Python, caption=Модульный тест для User и Course, label=lst:user_course_test]
-	from django.test import TestCase
-	from django.contrib.auth import get_user_model
-	from .models import Course
+\begin{enumerate}
+	\item Модель User: проверка создания пользователей с ролями студента и преподавателя.
+	\begin{lstlisting}[language=Python, caption=Модульный тест для User, label=lst:user_test]
+		from django.test import TestCase
+		from django.contrib.auth import get_user_model
+		
+		User = get_user_model()
+		
+		class UserTestCases(TestCase):
+		def setUp(self):
+		self.teacher = User.objects.create_user(
+		username='sonya1',
+		password='vanya232323',
+		is_teacher=True
+		)
+		self.student = User.objects.create_user(
+		username='Ivan_Sedih',
+		password='vanya232323',
+		is_student=True
+		)
+		
+		def test_user_creation(self):
+		self.assertTrue(self.teacher.is_teacher)
+		self.assertTrue(self.student.is_student)
+	\end{lstlisting}
 	
-	User = get_user_model()
+	\item Модель Course: проверка создания курса, валидации полей и связи с создателем.
+	\begin{lstlisting}[language=Python, caption=Модульный тест для Course, label=lst:course_test]
+		from django.test import TestCase
+		from learning.models import Course
+		from django.contrib.auth import get_user_model
+		
+		User = get_user_model()
+		
+		class CourseTestCases(TestCase):
+		def setUp(self):
+		self.teacher = User.objects.create_user(username='sonya1', password='vanya232323', is_teacher=True)
+		self.course = Course.objects.create(
+		title='Основы JS',
+		description='Описание курса',
+		creator=self.teacher,
+		is_active=True
+		)
+		
+		def test_course_creation(self):
+		self.assertEqual(self.course.title, 'Основы JS')
+		self.assertEqual(self.course.creator, self.teacher)
+		self.assertTrue(self.course.is_active)
+	\end{lstlisting}
 	
-	class EducationPlatformTestCases(TestCase):
-	def setUp(self):
-	self.user = User.objects.create_user(username='teststudent', password='testpass123', is_student=True)
-	self.course = Course.objects.create(title='JavaScript Basics', description='Introduction to JavaScript', creator=self.user)
+	\item Модель Lesson: проверка добавления урока, порядка и связи с курсом.
+	\begin{lstlisting}[language=Python, caption=Модульный тест для Lesson, label=lst:lesson_test]
+		from django.test import TestCase
+		from learning.models import Course, Lesson
+		from django.contrib.auth import get_user_model
+		
+		User = get_user_model()
+		
+		class LessonTestCases(TestCase):
+		def setUp(self):
+		self.teacher = User.objects.create_user(username='sonya1', password='vanya232323', is_teacher=True)
+		self.course = Course.objects.create(title='Массивы', description='Описание курса', creator=self.teacher)
+		self.lesson = Lesson.objects.create(
+		title='Что такое массивы',
+		content='Содержимое урока',
+		order=1,
+		course=self.course,
+		is_published=True
+		)
+		
+		def test_lesson_creation(self):
+		self.assertEqual(self.lesson.title, 'Что такое массивы')
+		self.assertEqual(self.lesson.order, 1)
+		self.assertEqual(self.lesson.course, self.course)
+	\end{lstlisting}
 	
-	def test_user_and_course(self):
-	self.assertEqual(self.user.username, 'teststudent')
-	self.assertTrue(self.user.is_student)
-	self.assertEqual(self.course.title, 'JavaScript Basics')
-\end{lstlisting}
+	\item Модель Test: проверка создания тестов и связи с уроком.
+	\begin{lstlisting}[language=Python, caption=Модульный тест для Test, label=lst:test_test]
+		from django.test import TestCase
+		from learning.models import Test, Lesson, Course
+		from django.contrib.auth import get_user_model
+		
+		User = get_user_model()
+		
+		class TestTestCases(TestCase):
+		def setUp(self):
+		self.teacher = User.objects.create_user(username='sonya1', password='vanya232323', is_teacher=True)
+		self.course = Course.objects.create(title='Массивы', description='Описание курса', creator=self.teacher)
+		self.lesson = Lesson.objects.create(title='Поиск индекса элемента в массиве', content='Содержимое урока', order=1, course=self.course)
+		self.test = Test.objects.create(
+		title='Тест',
+		passing_score=80,
+		lesson=self.lesson,
+		is_active=True
+		)
+		
+		def test_test_creation(self):
+		self.assertEqual(self.test.title, 'Тест')
+		self.assertEqual(self.test.passing_score, 80)
+		self.assertEqual(self.test.lesson, self.lesson)
+	\end{lstlisting}
+	
+	\item Модель Question: проверка вопросов с разными типами (single, multiple, text).
+	\begin{lstlisting}[language=Python, caption=Модульный тест для Question, label=lst:question_test]
+		from django.test import TestCase
+		from learning.models import Test, Question, Lesson, Course
+		from django.contrib.auth import get_user_model
+		
+		User = get_user_model()
+		
+		class QuestionTestCases(TestCase):
+		def setUp(self):
+		self.teacher = User.objects.create_user(username='sonya1', password='vanya232323', is_teacher=True)
+		self.course = Course.objects.create(title='Массивы', description='Описание курса', creator=self.teacher)
+		self.lesson = Lesson.objects.create(title='Поиск индекса элемента в массиве', content='Содержимое урока', order=1, course=self.course)
+		self.test = Test.objects.create(title='Тест', passing_score=80, lesson=self.lesson, is_active=True)
+		self.question = Question.objects.create(
+		text='Что такое массив?',
+		question_type='single',
+		points=10,
+		test=self.test
+		)
+		
+		def test_question_creation(self):
+		self.assertEqual(self.question.text, 'Что такое массив?')
+		self.assertEqual(self.question.question_type, 'single')
+		self.assertEqual(self.question.test, self.test)
+	\end{lstlisting}
+	
+	\item Модель Answer: проверка вариантов ответов и индикатора правильности.
+	\begin{lstlisting}[language=Python, caption=Модульный тест для Answer, label=lst:answer_test]
+		from django.test import TestCase
+		from learning.models import Test, Question, Answer, Lesson, Course
+		from django.contrib.auth import get_user_model
+		
+		User = get_user_model()
+		
+		class AnswerTestCases(TestCase):
+		def setUp(self):
+		self.teacher = User.objects.create_user(username='sonya1', password='vanya232323', is_teacher=True)
+		self.course = Course.objects.create(title='Массивы', description='Описание курса', creator=self.teacher)
+		self.lesson = Lesson.objects.create(title='Что такое массивы', content='Содержимое урока', order=1, course=self.course)
+		self.test = Test.objects.create(title='Тест', passing_score=70, lesson=self.lesson)
+		self.question = Question.objects.create(text='Что такое индекс?', question_type='single', points=10, test=self.test)
+		self.answer = Answer.objects.create(text='Индекс', is_correct=False, question=self.question, order=1)
+		
+		def test_answer_creation(self):
+		self.assertEqual(self.answer.text, 'Индекс')
+		self.assertFalse(self.answer.is_correct)
+		self.assertEqual(self.answer.question, self.question)
+	\end{lstlisting}
+	
+	\item Модель TestResult: проверка сохранения результатов тестов.
+	\begin{lstlisting}[language=Python, caption=Модульный тест для TestResult, label=lst:testresult_test]
+		from django.test import TestCase
+		from learning.models import TestResult, Test, Lesson, Course
+		from django.contrib.auth import get_user_model
+		from django.utils import timezone
+		
+		User = get_user_model()
+		
+		class TestResultTestCases(TestCase):
+		def setUp(self):
+		self.teacher = User.objects.create_user(username='sonya1', password='vanya232323', is_teacher=True)
+		self.student = User.objects.create_user(username='Ivan_Sedih', password='vanya232323', is_student=True)
+		self.course = Course.objects.create(title='Объекты', description='Описание курса', creator=self.teacher)
+		self.lesson = Lesson.objects.create(title='Создание объектов', content='Содержимое урока', order=1, course=self.course)
+		self.test = Test.objects.create(title='Тест', passing_score=70, lesson=self.lesson)
+		self.test_result = TestResult.objects.create(
+		student=self.student,
+		lesson=self.lesson,
+		score=85,
+		answers='{"q1": "a1"}',
+		attempts=1,
+		completed_at=timezone.now()
+		)
+		
+		def test_testresult_creation(self):
+		self.assertEqual(self.test_result.score, 85)
+		self.assertEqual(self.test_result.student, self.student)
+		self.assertEqual(self.test_result.lesson, self.lesson)
+	\end{lstlisting}
+	
+	\item Модель Enrollment: проверка записи студента на курс.
+	\begin{lstlisting}[language=Python, caption=Модульный тест для Enrollment, label=lst:enrollment_test]
+		from django.test import TestCase
+		from learning.models import Enrollment, Course
+		from django.contrib.auth import get_user_model
+		
+		User = get_user_model()
+		
+		class EnrollmentTestCases(TestCase):
+		def setUp(self):
+		self.teacher = User.objects.create_user(username='sonya1', password='vanya232323', is_teacher=True)
+		self.student = User.objects.create_user(username='Ivan_Sedih', password='vanya232323', is_student=True)
+		self.course = Course.objects.create(title='Типы данных', description='Описание курса', creator=self.teacher)
+		self.enrollment = Enrollment.objects.create(student=self.student, course=self.course)
+		
+		def test_enrollment_creation(self):
+		self.assertEqual(self.enrollment.student, self.student)
+		self.assertEqual(self.enrollment.course, self.course)
+	\end{lstlisting}
+	
+	\item Модель StudentProgress: проверка отметки о завершении урока.
+	\begin{lstlisting}[language=Python, caption=Модульный тест для StudentProgress, label=lst:studentprogress_test]
+		from django.test import TestCase
+		from learning.models import StudentProgress, Lesson, Course
+		from django.contrib.auth import get_user_model
+		from django.utils import timezone
+		
+		User = get_user_model()
+		
+		class StudentProgressTestCases(TestCase):
+		def setUp(self):
+		self.teacher = User.objects.create_user(username='sonya1', password='vanya232323', is_teacher=True)
+		self.student = User.objects.create_user(username='Ivan_Sedih', password='vanya232323', is_student=True)
+		self.course = Course.objects.create(title='Типы данных', description='Описание курса', creator=self.teacher)
+		self.lesson = Lesson.objects.create(title='Переменные', content='Содержимое урока', order=1, course=self.course)
+		self.progress = StudentProgress.objects.create(
+		student=self.student,
+		lesson=self.lesson,
+		completed=True,
+		completed_at=timezone.now()
+		)
+		
+		def test_studentprogress_creation(self):
+		self.assertTrue(self.progress.completed)
+		self.assertEqual(self.progress.student, self.student)
+		self.assertEqual(self.progress.lesson, self.lesson)
+	\end{lstlisting}
+	
+	\item Модель Achievement: проверка создания достижений.
+	\begin{lstlisting}[language=Python, caption=Модульный тест для Achievement, label=lst:achievement_test]
+		from django.test import TestCase
+		from learning.models import Achievement
+		
+		class AchievementTestCases(TestCase):
+		def setUp(self):
+		self.achievement = Achievement.objects.create(
+		title='Первый курс',
+		description='Завершён первый курс',
+		badge_image='badges/first_course.png'
+		)
+		
+		def test_achievement_creation(self):
+		self.assertEqual(self.achievement.title, 'Первый курс')
+		self.assertEqual(self.achievement.description, 'Завершён первый курс')
+	\end{lstlisting}
+	
+	\item Модель UserAchievement: проверка присвоения достижений пользователям.
+	\begin{lstlisting}[language=Python, caption=Модульный тест для UserAchievement, label=lst:userachievement_test]
+		from django.test import TestCase
+		from learning.models import Achievement, UserAchievement
+		from django.contrib.auth import get_user_model
+		from django.utils import timezone
+		
+		User = get_user_model()
+		
+		class UserAchievementTestCases(TestCase):
+		def setUp(self):
+		self.student = User.objects.create_user(username='Ivan_Sedih', password='vanya232323', is_student=True)
+		self.achievement = Achievement.objects.create(
+		title='Завершение теста',
+		description='Сдан первый тест',
+		badge_image='badges/test_completed.png'
+		)
+		self.user_achievement = UserAchievement.objects.create(
+		user=self.student,
+		achievement=self.achievement,
+		awarded_at=timezone.now()
+		)
+		
+		def test_userachievement_creation(self):
+		self.assertEqual(self.user_achievement.user, self.student)
+		self.assertEqual(self.user_achievement.achievement, self.achievement)
+	\end{lstlisting}
+\end{enumerate}
 
-\begin{xltabular}{\textwidth}{|X|l|X|}
-	\caption{Результаты модульного тестирования\label{tab:module_testing_results}}\\
-	\hline
-	Тест & Статус & Описание \\ \hline
-	\endfirsthead
-	\continuecaption{Продолжение таблицы \ref{tab:module_testing_results}}\\
-	\hline
-	Тест & Статус & Описание \\ \hline
-	\endhead
-	Регистрация пользователя & Успешно & Проверена корректность создания пользователя с ролями \\ \hline
-	Создание курса & Успешно & Проверено создание курса преподавателем \\ \hline
-	Добавление урока & Успешно & Проверена сортировка уроков по order \\ \hline
-	Прохождение теста & Успешно & Проверен подсчёт баллов \\ \hline
-	Локализация интерфейса & Успешно & Проверено переключение языков (ru/en) \\ \hline
-\end{xltabular}
+Инструменты: django.test.TestCase, unittest.\\
+Результаты: все тесты выполнены успешно, ошибок не обнаружено.
+
 
 \subsection{Системное тестирование разработанного веб-приложения}
 
@@ -797,14 +1035,155 @@
 
 Сценарии тестирования:
 	\begin{enumerate}
-		\item Регистрация и авторизация пользователя.
-		\item Создание курса и запись студента.
-		\item Добавление урока с контентом через CKEditor.
-		\item Прохождение теста и просмотр результатов.
-		\item Переключение языка интерфейса.
+	\item Регистрация и авторизация пользователя.
+	\item Создание курса и запись студента.
+	\item Добавление урока с контентом через CKEditor.
+	\item Прохождение теста и просмотр результатов.
+	\item Присвоение достижения студенту.
+	\item Редактирование курса.
+	\item Удаление курса.
+	\item Переупорядочивание уроков.
+	\item Проверка доступа к уроку.
+	\item Просмотр прогресса студента.
+	\item Управление вопросами и ответами теста.
 	\end{enumerate}
-Результаты: все сценарии выполнены успешно;
 
+
+Описание сценариев тестирования:
+
+	\begin{enumerate}
+	
+	\item Регистрация и авторизация пользователя.
+	
+Описание: пользователь должен иметь возможность зарегистрироваться в системе, выбрав роль (преподаватель или студент), и войти с использованием учетных данных (имя пользователя, пароль, email).
+	
+Ожидаемый результат: при успешной регистрации и вводе верных учетных данных осуществляется вход, открывается главная рабочая область (панель управления для преподавателя или каталог курсов для студента). При вводе некорректных данных система отображает сообщение об ошибке (например, "Пользователь не найден").
+	
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\textwidth]{images/регистр} 
+		\caption{Регистрация и авторизация пользователя}
+		\label{login:image}
+	\end{figure}
+	
+	\item Создание курса и запись студента
+	
+Описание: преподаватель должен иметь возможность создать новый курс, указав название, описание и изображение, а студент — записаться на существующий курс.
+	
+Ожидаемый результат: после создания курса он отображается в каталоге курсов, а студент, выбрав курс и нажав "Записаться", получает доступ к нему. При ошибке в данных (например, пустое название) система выдает предупреждение.
+	
+\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\textwidth]{images/запись} 
+		\caption{Создание курса и запись студента}
+		\label{enroll:image}
+\end{figure}
+	
+	\item Добавление урока
+	
+Описание: преподаватель должен иметь возможность добавить урок к курсу, используя CKEditor для редактирования контента (текст, видео, упражнения), с указанием порядка и статуса публикации.
+	
+Ожидаемый результат: урок успешно добавляется, контент отображается корректно для студентов после публикации. При отсутствии обязательных полей (например, названия) система выдает сообщение об ошибке.
+	
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\textwidth]{images/урокдобавить} 
+		\caption{Добавление урока}
+		\label{urok:image}
+	\end{figure}
+	\newpage
+	\item Прохождение теста и просмотр результатов
+	
+Описание: студент должен иметь возможность пройти тест, связанный с уроком, выбрав ответы или введя текст, и просмотреть результат после завершения.
+	
+Ожидаемый результат: после сдачи теста отображаются баллы и статус (пройден/не пройден). При некорректных ответах система сохраняет результат и предлагает повторить попытку, если разрешено.
+	
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\textwidth]{images/тестрез} 
+		\caption{Прохождение теста и результаты}
+		\label{test:image}
+	\end{figure}
+	
+	\item Присвоение достижения студенту
+	
+Описание: система должна автоматически присваивать достижение студенту после выполнения определенного действия (например, завершения первого урока), а студент должен иметь возможность просмотреть полученные достижения в своем профиле.
+	
+Ожидаемый результат: после завершения урока система регистрирует достижение (например, "Первый завершённый урок") и отображается его в профиле студента. При ошибке (например, если достижение не настроено) система уведомляет администратора, но не прерывает работу.
+	
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\textwidth]{images/достижение} 
+		\caption{Присвоение достижения студенту}
+		\label{achiv:image}
+	\end{figure}
+	
+	\item Редактирование курса
+	
+Описание: преподаватель должен иметь возможность редактировать существующий курс, изменяя его название, описание, изображение или статус публикации.
+	
+Ожидаемый результат: после редактирования изменения сохраняются, и обновленный курс отображается в каталоге курсов. При ошибке (например, пустое название) система выдает предупреждение.
+	
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\textwidth]{images/редактироватькурс} 
+		\caption{Редактирование курса}
+		\label{editcourse:image}
+	\end{figure}
+\newpage	
+	\item Удаление курса
+	
+Описание: преподаватель должен иметь возможность удалить курс, при этом связанные данные (уроки, тесты) удаляются каскадно.
+	
+Ожидаемый результат: курс удаляется из системы, он больше не отображается в каталоге курсов, связанные уроки и тесты также удалены. При отсутствии прав (например, пользователь не является создателем курса) система выдает сообщение об ошибке.
+	
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\textwidth]{images/удалитькурс} 
+		\caption{Удаление курса}
+		\label{deletecourse:image}
+	\end{figure}
+	
+	\item Проверка доступа к уроку
+	
+Описание: система должна ограничивать доступ студента к уроку, если предыдущий урок не завершен или тест не сдан.
+	
+Ожидаемый результат: студент не может открыть урок, если не выполнены условия доступа, и получает уведомление (например, "Завершите предыдущий урок"). При выполнении условий урок становится доступным.
+	
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\textwidth]{images/доступурок} 
+		\caption{Проверка доступа к уроку}
+		\label{access:image}
+	\end{figure}
+	
+	\item Просмотр прогресса студента
+	
+Описание: студент должен иметь возможность просмотреть свой прогресс по курсу, включая завершенные уроки, результаты тестов и средний балл.
+	
+Ожидаемый результат: в панели студента отображаются завершенные уроки, результаты тестов и средний балл по курсу. При отсутствии данных (например, студент не начал курс) отображается соответствующее сообщение.
+	
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\textwidth]{images/прогресс} 
+		\caption{Просмотр прогресса студента}
+		\label{progress:image}
+	\end{figure}
+\newpage	
+	\item Управление вопросами и ответами теста
+	
+Описание: преподаватель должен иметь возможность добавить, редактировать и удалить вопросы и ответы теста, связанного с уроком.
+	
+Ожидаемый результат: вопросы и ответы успешно добавляются, редактируются или удаляются, изменения отражаются в тесте для студентов. При ошибке (например, некорректный тип вопроса) система выдает сообщение.
+	
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\textwidth]{images/вопросы} 
+		\caption{Управление вопросами и ответами теста}
+		\label{questions:image}
+	\end{figure}
+	
+\end{enumerate}
 
 \begin{xltabular}{\textwidth}{|X|l|X|}
 	\caption{Результаты системного тестирования\label{tab:system_testing_results}}\\
@@ -819,9 +1198,16 @@
 	Создание и запись на курс & Успешно & Курс создаётся, студенты записываются \\ \hline
 	Добавление урока & Успешно & Урок добавляется, контент отображается \\ \hline
 	Прохождение теста & Успешно & Тесты проходятся, результаты сохраняются \\ \hline
-	Локализация & Успешно & Интерфейс переключается между языками \\ \hline
+	Присвоение достижения & Успешно & Достижение присваивается, отображается в профиле \\ \hline
+	Редактирование курса & Успешно & Курс редактируется, изменения сохраняются \\ \hline
+	Удаление курса & Успешно & Курс и связанные данные удаляются \\ \hline
+	Переупорядочивание уроков & Успешно & Уроки переупорядочиваются корректно \\ \hline
+	Проверка доступа к уроку & Успешно & Доступ ограничивается по условиям \\ \hline
+	Просмотр прогресса студента & Успешно & Прогресс отображается в панели студента \\ \hline
+	Управление вопросами и ответами & Успешно & Вопросы и ответы редактируются корректно \\ \hline
 \end{xltabular}
 
+Результаты: все сценарии выполнены успешно, система работает стабильно, критических ошибок не выявлено. Функциональность соответствует заявленным требованиям, обеспечивая удобство использования для преподавателей и студентов в рамках образовательных процессов. Тестирование подтвердило надежность платформы, включая обработку ошибок, ограничение доступа и управление контентом курсов.
 
 \subsection{Сборка компонентов системы}
 
@@ -847,8 +1233,41 @@
 	from . import views
 	
 	urlpatterns = [
-	path('courses/', views.course_list, name='courses'),
-	path('courses/create/', views.create_course, name='create_course'),
-	path('courses/<int:pk>/', views.course_detail, name='course_detail'),
+	path('', views.home, name='home'),
+	path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login'),
+	path('dashboard/student/', views.student_dashboard, name='student_dashboard'),
+	path('teacher/dashboard/', views.teacher_dashboard, name='teacher_dashboard'),
+	path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+	path('signup/student/', views.StudentSignUpView.as_view(), name='student_signup'),
+	path('logout/', LogoutView.as_view(), name='logout'),
+	path('signup/teacher/', views.TeacherSignUpView.as_view(), name='teacher_signup'),
+	path('course/create/', views.CourseCreateView.as_view(), name='course_create'),
+	path('course/<int:pk>/edit/', views.CourseUpdateView.as_view(), name='course_edit'),
+	path('course/<int:course_id>/', views.course_detail, name='course_detail'),
+	path('course/<int:course_id>/enroll/', views.enroll_course, name='enroll_course'),
+	path('course/<int:course_id>/unenroll/', views.unenroll_course, name='unenroll_course'),
+	path('course/<int:course_id>/manage-lessons/', views.manage_lessons, name='manage_lessons'),
+	path('course/<int:course_id>/delete/', views.delete_course, name='delete_course'),
+	path('course/<int:course_id>/reorder-lessons/', views.reorder_lessons, name='reorder_lessons'),
+	path('lesson/<int:pk>/edit/', views.LessonUpdateView.as_view(), name='lesson_edit'),
+	path('lesson/<int:lesson_id>/', views.LessonDetailView.as_view(), name='lesson_detail'),
+	path('lesson/<int:lesson_id>/preview/', views.lesson_preview, name='lesson_preview'),
+	path('test/<int:test_id>/questions/', views.manage_test_questions, name='manage_test_questions'),
+	path('lesson/<int:lesson_id>/test/create/', views.create_test, name='create_test'),
+	path('test/<int:test_id>/questions/', views.manage_test_questions, name='manage_test_questions'),
+	path('test/<int:test_id>/add-question/', views.add_question, name='add_question'),
+	path('upload_image/', views.upload_image, name='upload_image'),
+	path('question/<int:pk>/edit/', views.QuestionUpdateView.as_view(), name='edit_question'),
+	path('question/<int:pk>/delete/', views.QuestionDeleteView.as_view(), name='delete_question'),
+	path('question/<int:question_id>/answer/add/', views.AnswerCreateView.as_view(), name='add_answer'),
+	path('answer/<int:pk>/edit/', views.AnswerUpdateView.as_view(), name='edit_answer'),
+	path('answer/<int:pk>/delete/', views.AnswerDeleteView.as_view(), name='delete_answer'),
+	path('lesson/<int:lesson_id>/test/result/', views.test_result, name='test_result'),
+	path('test/<int:test_id>/results/', views.manage_test_results, name='manage_test_results'),
+	path('lesson/<int:lesson_id>/test/results/', views.test_result, name='test_results'),
+	path('lesson/<int:lesson_id>/complete/', views.complete_lesson, name='complete_lesson'),
+	path('lesson/<int:lesson_id>/delete/', views.delete_lesson, name='delete_lesson'),
+	path('test/<int:test_id>/delete/', views.delete_test, name='delete_test'),
+	path('glossary/', views.glossary, name='glossary'),
 	]
 \end{lstlisting}
